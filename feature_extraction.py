@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Tuple, Union
 import librosa as lr
 import numpy as np
@@ -16,7 +15,6 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
             print(e)
             sr = int(sr * 0.8)
             print("NP Array too large, downsampling audio to: " + str(sr))
-            sleep(1)
     return samples, sr
 
 def torch_load_file(filepath: str) -> Tuple[torch.Tensor, int]:
