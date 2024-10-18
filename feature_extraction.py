@@ -5,6 +5,10 @@ import torch
 import torchaudio
 import matplotlib.pyplot as plt
 
+universal_fmin = 65
+universal_fmax = 2093
+
+# File loaders
 def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
     sr = lr.get_samplerate(filepath)
     while True:
@@ -27,6 +31,7 @@ def gen_mel_spec_lr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray
     # return mel_spec powers
     return lr.feature.melspectrogram(S=sgram_mag, sr=sample_rate)
 
+# Imperceptible features
 def gen_mfcc_lr(samples: np.ndarray, sample_rate: int | float, count: int) -> np.ndarray:
     mel_spec = gen_mel_spec_lr(samples, sample_rate)
     return lr.feature.mfcc(S=lr.power_to_db(mel_spec), n_mfcc=20)
@@ -39,6 +44,7 @@ def gen_mfcc(samples: torch.Tensor, sample_rate: int, count: int):
     transform = torchaudio.transforms.MFCC(sample_rate)
     return transform(samples)
 
+# Plot torch-generated spectrogram
 def plot_spec(to_plot: torchaudio.transforms.Spectrogram, title="title", y_label="freq") -> None:
     form_np = to_plot.numpy()
     fig, ax = plt.subplots(1, 1)
@@ -47,10 +53,12 @@ def plot_spec(to_plot: torchaudio.transforms.Spectrogram, title="title", y_label
     plt.show()
     return
 
+# Get the lengths of every fundamental frequency cycle
 def get_f0_lens(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
-    f0 = lr.yin(samples, fmin=65, fmax=2093)
+    f0 = lr.yin(samples, fmin=universal_fmin, fmax=universal_fmax)
     return 1 / f0
 
+# Perceptible features from Chaiwongyen et al, 2023:
 def get_local_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
@@ -98,3 +106,26 @@ def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> 
         difsum += np.abs(samples[i] - np.average(samples[i-m:i+m+1]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
+# TODO: Harmonic features from Chaiwongyen et al, 2023
+
+# Estimation of socio-linguistic features from Khanjani et al, 2023
+
+# Estimate pitches based on the maximum power harmonics
+def get_pitches(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+    harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
+    mag_len = magnitudes.shape[0]
+    max_indices = np.argmax(magnitudes, axis=1)
+    del magnitudes
+    pitches = harmonics[range(mag_len), max_indices]
+    return pitches
+
+# Estimate the fluctuations in pitches based on a given offset
+# Example, with an offset of 1, every pitch index i will be compared to the pitch at i-1
+def get_pitch_fluctuation(samples: np.ndarray, sample_rate: int | float, compare_offset: int):
+    if compare_offset < 0:
+        raise Exception("compare_offset must be positive")
+    pitches = get_pitches(samples, sample_rate)
+    comp_pitches = np.roll(pitches, compare_offset)
+    fluctuations = pitches - comp_pitches
+    del pitches, comp_pitches
+    return fluctuations[compare_offset:]
