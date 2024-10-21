@@ -6,4 +6,5 @@ print("dependencies loaded")
 if __name__ == "__main__":
     filepath = "test.mp3"
     samples, sample_rate = feature_extraction.lr_load_file(filepath)
-    print(feature_extraction.get_mean_hnr(samples, sample_rate))
+    flucs = feature_extraction.get_pitch_fluctuation(samples, sample_rate, 5)
+    print(feature_extraction.get_summary_stats(flucs))

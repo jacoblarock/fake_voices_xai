@@ -24,6 +24,17 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
 def torch_load_file(filepath: str) -> Tuple[torch.Tensor, int]:
     return torchaudio.load(filepath)
 
+# Summarize the results of the pitch fluctuation function into five percentiles
+def get_summary_stats(data: np.ndarray) -> dict:
+    data = data[data != 0.0]
+    return {
+        0.05: np.quantile(data, 0.05),
+        0.25: np.quantile(data, 0.25),
+        0.50: np.quantile(data, 0.50),
+        0.75: np.quantile(data, 0.75),
+        0.95: np.quantile(data, 0.95)
+    }
+
 def gen_mel_spec_lr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     # Short-time Fourier transform 
     sgram = lr.stft(samples)
@@ -136,8 +147,13 @@ def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     return np.average(local_hnrs[local_hnrs > -np.inf])
 
 # Onset strength (per Li et al, 2022)
-def get_onset_strength(samples: np.ndarray, sample_rate: int | float):
+def get_onset_strength(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     return lr.onset.onset_strength_multi(y=samples, sr=sample_rate, hop_length=160)
+
+def get_intensity(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+    stft = gen_stft_mags(samples, sample_rate)
+    amps = np.sum(stft, axis=1)
+    return lr.power_to_db(amps)
 
 # Estimation of socio-linguistic features from Khanjani et al, 2023
 
@@ -160,14 +176,3 @@ def get_pitch_fluctuation(samples: np.ndarray, sample_rate: int | float, compare
     fluctuations = pitches - comp_pitches
     del pitches, comp_pitches
     return fluctuations[compare_offset:]
-
-# Summarize the results of the pitch fluctuation function into five percentiles
-def get_pitch_fluc_stats(samples: np.ndarray, sample_rate: int | float, compare_offset: int) -> dict:
-    fluctuations = get_pitch_fluctuation(samples, sample_rate, compare_offset)
-    return {
-        0.05: np.quantile(fluctuations, 0.05),
-        0.25: np.quantile(fluctuations, 0.25),
-        0.50: np.quantile(fluctuations, 0.50),
-        0.75: np.quantile(fluctuations, 0.75),
-        0.95: np.quantile(fluctuations, 0.95)
-    }
