@@ -120,7 +120,7 @@ def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> 
 # TODO: Harmonic features from Chaiwongyen et al, 2023 / Li et al, 2022
 
 # Harmonic Noise Ratio (HNR)
-# harmonic power divided by the residual of subtracting harmonic power from the total power (noise)
+# log of harmonic power divided by the residual of subtracting harmonic power from the total power (noise)
 # per Chaiwongyen et al, 2022/2023 and Li et al, 2022
 def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
@@ -137,7 +137,7 @@ def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 
 # Onset strength (per Li et al, 2022)
 def get_onset_strength(samples: np.ndarray, sample_rate: int | float):
-    return lr.onset.onset_strength(y=samples, sr=sample_rate)
+    return lr.onset.onset_strength_multi(y=samples, sr=sample_rate, hop_length=160)
 
 # Estimation of socio-linguistic features from Khanjani et al, 2023
 
@@ -152,7 +152,7 @@ def get_pitches(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 
 # Estimate the fluctuations in pitches based on a given offset
 # Example, with an offset of 1, every pitch index i will be compared to the pitch at i-1
-def get_pitch_fluctuation(samples: np.ndarray, sample_rate: int | float, compare_offset: int):
+def get_pitch_fluctuation(samples: np.ndarray, sample_rate: int | float, compare_offset: int) -> np.ndarray:
     if compare_offset < 0:
         raise Exception("compare_offset must be positive")
     pitches = get_pitches(samples, sample_rate)
@@ -160,3 +160,14 @@ def get_pitch_fluctuation(samples: np.ndarray, sample_rate: int | float, compare
     fluctuations = pitches - comp_pitches
     del pitches, comp_pitches
     return fluctuations[compare_offset:]
+
+# Summarize the results of the pitch fluctuation function into five percentiles
+def get_pitch_fluc_stats(samples: np.ndarray, sample_rate: int | float, compare_offset: int) -> dict:
+    fluctuations = get_pitch_fluctuation(samples, sample_rate, compare_offset)
+    return {
+        0.05: np.quantile(fluctuations, 0.05),
+        0.25: np.quantile(fluctuations, 0.25),
+        0.50: np.quantile(fluctuations, 0.50),
+        0.75: np.quantile(fluctuations, 0.75),
+        0.95: np.quantile(fluctuations, 0.95)
+    }
