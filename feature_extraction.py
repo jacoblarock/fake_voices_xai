@@ -24,7 +24,8 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
 def torch_load_file(filepath: str) -> Tuple[torch.Tensor, int]:
     return torchaudio.load(filepath)
 
-# Summarize the results of the pitch fluctuation function into five percentiles
+# Summarize the results of a calculation resulting in an array into quartiles
+# How does this affect classification?
 def get_summary_stats(data: np.ndarray) -> dict:
     data = data[data != 0.0]
     return {
@@ -150,10 +151,15 @@ def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 def get_onset_strength(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     return lr.onset.onset_strength_multi(y=samples, sr=sample_rate, hop_length=160)
 
+# Intensity (per Li et al, 2022)
 def get_intensity(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     stft = gen_stft_mags(samples, sample_rate)
     amps = np.sum(stft, axis=1)
     return lr.power_to_db(amps)
+
+# Chromagram (per Li et al, 2022)
+def gen_chromagram(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+    return lr.feature.chroma_stft(y=samples, sr=sample_rate, n_fft=12, hop_length=160)
 
 # Estimation of socio-linguistic features from Khanjani et al, 2023
 
