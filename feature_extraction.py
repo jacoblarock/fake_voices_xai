@@ -32,6 +32,11 @@ def gen_mel_spec_lr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray
     return lr.feature.melspectrogram(S=sgram_mag, sr=sample_rate)
 
 # Imperceptible features
+def gen_stft_mags(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+    stft = lr.stft(samples)
+    mags, _ =  lr.magphase(stft)
+    return mags
+
 def gen_mfcc_lr(samples: np.ndarray, sample_rate: int | float, count: int) -> np.ndarray:
     mel_spec = gen_mel_spec_lr(samples, sample_rate)
     return lr.feature.mfcc(S=lr.power_to_db(mel_spec), n_mfcc=20)
@@ -59,6 +64,7 @@ def get_f0_lens(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     return 1 / f0
 
 # Perceptible features from Chaiwongyen et al, 2023:
+# Jitter compared to next neighbor sample
 def get_local_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
@@ -67,6 +73,7 @@ def get_local_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     del rolled_f0
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
+# Jitter compared to both neighboring samples
 def get_rap_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
@@ -75,6 +82,7 @@ def get_rap_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
         difsum += np.abs(f0_lens[i] - np.average(f0_lens[i-1:i+2]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
+# Jitter compared to nearest five neighbors
 def get_ppq5_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
@@ -83,6 +91,7 @@ def get_ppq5_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
         difsum += np.abs(f0_lens[i] - np.average(f0_lens[i-2:i+3]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
+# Jitter compared to nearest fifty five neighbors
 def get_ppq55_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
@@ -91,6 +100,7 @@ def get_ppq55_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
         difsum += np.abs(f0_lens[i] - np.average(f0_lens[i-27:i+28]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
+# Shimmer compared to next neighbor sample
 def get_shim_local(samples: np.ndarray, sample_rate: int | float) -> float:
     N = len(samples)
     rolled_amps = np.roll(samples, -1)
@@ -98,6 +108,7 @@ def get_shim_local(samples: np.ndarray, sample_rate: int | float) -> float:
     del rolled_amps
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
+# Shimmer compared to n (count) neighboring samples
 def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> float:
     N = len(samples)
     m = int((count - 1) / 2)
@@ -106,7 +117,27 @@ def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> 
         difsum += np.abs(samples[i] - np.average(samples[i-m:i+m+1]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
-# TODO: Harmonic features from Chaiwongyen et al, 2023
+# TODO: Harmonic features from Chaiwongyen et al, 2023 / Li et al, 2022
+
+# Harmonic Noise Ratio (HNR)
+# harmonic power divided by the residual of subtracting harmonic power from the total power (noise)
+# per Chaiwongyen et al, 2022/2023 and Li et al, 2022
+def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+    harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
+    harmonic_powers = np.sum(magnitudes, axis=1)
+    power_totals = np.sum(gen_stft_mags(samples, sample_rate), axis=1)
+    # prevent div0
+    harmonic_powers = harmonic_powers[power_totals - harmonic_powers != 0]
+    power_totals = power_totals[power_totals - harmonic_powers != 0]
+    # prevent log(0)
+    harm_ratio = harmonic_powers/(power_totals-harmonic_powers)
+    harm_ratio = harm_ratio[harm_ratio != 0]
+    local_hnrs = 20 * np.log10(harm_ratio)
+    return np.average(local_hnrs[local_hnrs > -np.inf])
+
+# Onset strength (per Li et al, 2022)
+def get_onset_strength(samples: np.ndarray, sample_rate: int | float):
+    return lr.onset.onset_strength(y=samples, sr=sample_rate)
 
 # Estimation of socio-linguistic features from Khanjani et al, 2023
 
