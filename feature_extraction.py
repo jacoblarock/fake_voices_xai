@@ -1,8 +1,6 @@
 from typing import Tuple, Union
 import librosa as lr
 import numpy as np
-import torch
-import torchaudio
 import matplotlib.pyplot as plt
 
 universal_fmin = 65
@@ -20,9 +18,6 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
             sr = int(sr * 0.8)
             print("NP Array too large, downsampling audio to: " + str(sr))
     return samples, sr
-
-def torch_load_file(filepath: str) -> Tuple[torch.Tensor, int]:
-    return torchaudio.load(filepath)
 
 # Summarize the results of a calculation resulting in an array into quartiles
 # How does this affect classification?
@@ -52,23 +47,6 @@ def gen_stft_mags(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 def gen_mfcc_lr(samples: np.ndarray, sample_rate: int | float, count: int) -> np.ndarray:
     mel_spec = gen_mel_spec_lr(samples, sample_rate)
     return lr.feature.mfcc(S=lr.power_to_db(mel_spec), n_mfcc=20)
-
-def gen_mel_spec(samples: torch.Tensor, sample_rate: int) -> torchaudio.transforms.MelSpectrogram:
-    transform = torchaudio.transforms.MelSpectrogram(sample_rate)
-    return transform(samples)
-
-def gen_mfcc(samples: torch.Tensor, sample_rate: int, count: int):
-    transform = torchaudio.transforms.MFCC(sample_rate)
-    return transform(samples)
-
-# Plot torch-generated spectrogram
-def plot_spec(to_plot: torchaudio.transforms.Spectrogram, title="title", y_label="freq") -> None:
-    form_np = to_plot.numpy()
-    fig, ax = plt.subplots(1, 1)
-    ax.set_title(title)
-    ax.imshow(lr.power_to_db(form_np[0]), origin="lower", aspect="auto", interpolation="nearest")
-    plt.show()
-    return
 
 # Get the lengths of every fundamental frequency cycle
 def get_f0_lens(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
