@@ -6,7 +6,7 @@ Setup for experiments using explainable models to classify deepfake/bona-fide au
 
 In order to set-up the environment, use the provided anaconda environment contained within the environment.yml file:
 ```
-conda env create -r environment.yml
+conda env create -f environment.yml
 ```
 Then, activate the environment using:
 ```
