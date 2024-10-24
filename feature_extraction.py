@@ -134,7 +134,7 @@ def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> 
 # Harmonic Noise Ratio (HNR)
 # log of harmonic power divided by the residual of subtracting harmonic power from the total power (noise)
 # per Chaiwongyen et al, 2022/2023 and Li et al, 2022
-def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def get_hnrs(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
     harmonic_powers = np.sum(magnitudes, axis=1)
     power_totals = np.sum(gen_stft_mags(samples, sample_rate), axis=1)
@@ -145,7 +145,7 @@ def get_mean_hnr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harm_ratio = harmonic_powers/(power_totals-harmonic_powers)
     harm_ratio = harm_ratio[harm_ratio != 0]
     local_hnrs = 20 * np.log10(harm_ratio)
-    return np.average(local_hnrs[local_hnrs > -np.inf])
+    return local_hnrs
 
 # Onset strength (per Li et al, 2022)
 def get_onset_strength(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
