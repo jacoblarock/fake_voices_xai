@@ -162,6 +162,10 @@ cython_debug/
 .idea/
 
 # Custom exclusions
-# wav files used for testing
+# sound files used for testing
 *.wav
 *.mp3
+# In-The-Wild dataset
+release_in_the_wild/
+# cached extracted features
+extracted_features/*
