@@ -23,15 +23,12 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
 # How does this affect classification?
 def get_summary_stats(data: np.ndarray) -> dict:
     data = data[data != 0.0]
-    return {
-        0.05: np.quantile(data, 0.05),
-        0.25: np.quantile(data, 0.25),
-        0.50: np.quantile(data, 0.50),
-        0.75: np.quantile(data, 0.75),
-        0.95: np.quantile(data, 0.95)
-    }
+    out = {}
+    for i in range(1, 10):
+        out[i/10] = np.quantile(data, i/10)
+    return out
 
-def gen_mel_spec_lr(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def gen_mel_spec(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     # Short-time Fourier transform 
     sgram = lr.stft(samples)
     sgram_mag, sgram_phase = lr.magphase(sgram)
@@ -44,8 +41,8 @@ def gen_stft_mags(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     mags, _ =  lr.magphase(stft)
     return mags
 
-def gen_mfcc_lr(samples: np.ndarray, sample_rate: int | float, count: int) -> np.ndarray:
-    mel_spec = gen_mel_spec_lr(samples, sample_rate)
+def gen_mfcc(samples: np.ndarray, sample_rate: int | float, count: int) -> np.ndarray:
+    mel_spec = gen_mel_spec(samples, sample_rate)
     return lr.feature.mfcc(S=lr.power_to_db(mel_spec), n_mfcc=20)
 
 # Get the lengths of every fundamental frequency cycle
@@ -107,15 +104,15 @@ def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> 
         difsum += np.abs(samples[i] - np.average(samples[i-m:i+m+1]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
-# TODO: Harmonic features from Chaiwongyen et al, 2023 / Li et al, 2022
+# TODO: Further harmonic features from Chaiwongyen et al, 2023 / Li et al, 2022
 
 # Harmonic Noise Ratio (HNR)
 # log of harmonic power divided by the residual of subtracting harmonic power from the total power (noise)
 # per Chaiwongyen et al, 2022/2023 and Li et al, 2022
 def get_hnrs(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
-    harmonic_powers = np.sum(magnitudes, axis=1)
-    power_totals = np.sum(gen_stft_mags(samples, sample_rate), axis=1)
+    harmonic_powers = np.sum(magnitudes, axis=0)
+    power_totals = np.sum(gen_stft_mags(samples, sample_rate), axis=0)
     # prevent div0
     harmonic_powers = harmonic_powers[power_totals - harmonic_powers != 0]
     power_totals = power_totals[power_totals - harmonic_powers != 0]
@@ -144,10 +141,11 @@ def gen_chromagram(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 # Estimate pitches based on the maximum power harmonics
 def get_pitches(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
-    mag_len = magnitudes.shape[0]
-    max_indices = np.argmax(magnitudes, axis=1)
+    mag_len = magnitudes.shape[1]
+    max_indices = np.argmax(magnitudes, axis=0)
     del magnitudes
-    pitches = harmonics[range(mag_len), max_indices]
+    pitches = np.ndarray([])
+    pitches = harmonics[max_indices, range(mag_len)]
     return pitches
 
 # Estimate the fluctuations in pitches based on a given offset
