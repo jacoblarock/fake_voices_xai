@@ -1,7 +1,9 @@
-from typing import Tuple, Union
+from typing import Callable, Tuple, Union
 import librosa as lr
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import pickle
 
 universal_fmin = 65
 universal_fmax = 2093
@@ -18,6 +20,45 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
             sr = int(sr * 0.8)
             print("NP Array too large, downsampling audio to: " + str(sr))
     return samples, sr
+
+# TODO: MULTITHREADING!!!
+"""
+Apply a given feature extractor to a directory of files.
+Positional arguments:
+ - directory: directory path to search in
+ - extension: extension of the files (for example, ".wav")
+ - feature: Callable to apply to the audio files
+ - args: arguments for the feature extractor function, if necessary, for example gen_mfcc expects a "count" argument.
+Keyword arguments:
+ - summarize: whether the results (if results are np.ndarray) should be summarizes into quantiles (default False)
+ - cache: whether the results should be cached (default True)
+ - use_cached: whether previously cached results should be returned (default True)
+   NOTE: cache=True and use_cached=False will overwrite an existing cache, if one exists
+"""
+def bulk_extract(directory: str, extension: str, feature: Callable, args: list, summarize: bool = False, cache=True, use_cached=True) -> list[Tuple[Union[np.ndarray, float, dict]]]:
+    if directory[-1] != "/":
+        directory = directory + "/"
+    cache_path = "./extracted_features/" + directory[:-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
+    out = []
+    if os.path.isfile(cache_path) and use_cached:
+        with open(cache_path, "rb") as file:
+            out = pickle.load(file)
+    else:
+        files = os.listdir(directory)
+        for file in files:
+            if file[-len(extension):] != extension:
+                files.remove(file)
+        for file in files:
+            print(file)
+            samples, sample_rate = lr_load_file(directory + file)
+            if not summarize:
+                out.append((file, feature(samples, sample_rate, *args)))
+            if summarize:
+                out.append((file, get_summary_stats(feature(samples, sample_rate, *args))))
+        if cache:
+            with open(cache_path, "wb") as file:
+                pickle.dump(out, file)
+    return out
 
 # Summarize the results of a calculation resulting in an array into quartiles
 # How does this affect classification?
@@ -114,8 +155,10 @@ def get_hnrs(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harmonic_powers = np.sum(magnitudes, axis=0)
     power_totals = np.sum(gen_stft_mags(samples, sample_rate), axis=0)
     # prevent div0
-    harmonic_powers = harmonic_powers[power_totals - harmonic_powers != 0]
+    harmonic_powers_temp = harmonic_powers[power_totals - harmonic_powers != 0]
     power_totals = power_totals[power_totals - harmonic_powers != 0]
+    harmonic_powers = harmonic_powers_temp
+    del harmonic_powers_temp
     # prevent log(0)
     harm_ratio = harmonic_powers/(power_totals-harmonic_powers)
     harm_ratio = harm_ratio[harm_ratio != 0]

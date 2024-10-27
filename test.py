@@ -11,11 +11,5 @@ def plot_2d(data_arr):
     plt.show()
 
 if __name__ == "__main__":
-    filepath = "release_in_the_wild/0.wav"
-    samples, sample_rate = feature_extraction.lr_load_file(filepath)
-    hnrs = feature_extraction.get_hnrs(samples, sample_rate)
-    print(len(samples), len(hnrs))
-    filepath = "release_in_the_wild/1.wav"
-    samples, sample_rate = feature_extraction.lr_load_file(filepath)
-    hnrs = feature_extraction.get_hnrs(samples, sample_rate)
-    print(len(samples), len(hnrs))
+    bulk_extract = feature_extraction.bulk_extract("release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
+    print(bulk_extract)
