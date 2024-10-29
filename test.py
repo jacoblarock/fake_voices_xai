@@ -11,5 +11,5 @@ def plot_2d(data_arr):
     plt.show()
 
 if __name__ == "__main__":
-    bulk_extract = feature_extraction.bulk_extract("release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
+    bulk_extract = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
     print(bulk_extract)

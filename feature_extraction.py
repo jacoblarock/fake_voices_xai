@@ -1,3 +1,4 @@
+import sliding_window
 from typing import Callable, Tuple, Union
 import librosa as lr
 import numpy as np
@@ -35,10 +36,18 @@ Keyword arguments:
  - use_cached: whether previously cached results should be returned (default True)
    NOTE: cache=True and use_cached=False will overwrite an existing cache, if one exists
 """
-def bulk_extract(directory: str, extension: str, feature: Callable, args: list, summarize: bool = False, cache=True, use_cached=True) -> list[Tuple[Union[np.ndarray, float, dict]]]:
+def bulk_extract(directory: str,
+                 extension: str,
+                 feature: Callable,
+                 args: list,
+                 window_length: int = 10,
+                 summarize: bool = False,
+                 cache=True,
+                 use_cached=True
+                 ) -> list[Tuple[Union[np.ndarray, float, dict]]]:
     if directory[-1] != "/":
         directory = directory + "/"
-    cache_path = "./extracted_features/" + directory[:-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
+    cache_path = "./extracted_features/" + directory[:-1].split("/")[-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
     out = []
     if os.path.isfile(cache_path) and use_cached:
         with open(cache_path, "rb") as file:
@@ -49,10 +58,20 @@ def bulk_extract(directory: str, extension: str, feature: Callable, args: list, 
             if file[-len(extension):] != extension:
                 files.remove(file)
         for file in files:
-            print(file)
             samples, sample_rate = lr_load_file(directory + file)
             if not summarize:
-                out.append((file, feature(samples, sample_rate, *args)))
+                extracted_feature = feature(samples, sample_rate, *args)
+                if type(extracted_feature) == np.ndarray:
+                    window = sliding_window.window(extracted_feature, window_length)
+                    i = 0
+                    state = 1
+                    out.append((file + str(i), window.get_window()))
+                    while state == 1:
+                        i += 1
+                        state = window.hop(0.5)
+                        out.append((file + str(i), window.get_window()))
+                else:
+                    out.append((file, extracted_feature))
             if summarize:
                 out.append((file, get_summary_stats(feature(samples, sample_rate, *args))))
         if cache:

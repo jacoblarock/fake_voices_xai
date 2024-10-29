@@ -165,7 +165,7 @@ cython_debug/
 # sound files used for testing
 *.wav
 *.mp3
-# In-The-Wild dataset
-release_in_the_wild/
+# Folder for datasets
+datasets/
 # cached extracted features
 extracted_features/*

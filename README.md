@@ -24,6 +24,10 @@ To download the In-The-Wild Dataset:
 https://owncloud.fraunhofer.de/index.php/s/JZgXh0JEAF0elxa/download
 ```
 The data can then be extracted into the release_in_the_wild/ directory. This directory is in the .gitignore file so that the dataset will not be committed to the repository.
+The dataset of ASVSpoof2021 DF can be found here
+```
+https://zenodo.org/records/4835108
+```
 
 # extracted_features/
 In this directory, the python scripts can cache extracted features, so that they can be reused without repeating computations. This directors is also excluded in the .gitignore file.
