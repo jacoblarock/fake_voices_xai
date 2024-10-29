@@ -2,6 +2,12 @@ import tensorflow as tf
 from keras._tf_keras.keras import models, layers, losses
 from typing import Tuple
 
+"""
+creates a 2D cnn with:
+ - n_layers convolutional layers separated by max pooling layers
+ - n_filters filters in each convolutional layer
+ - a 2d input shape defined in a tuple (x, y)
+"""
 def create_cnn_2d(input_shape: Tuple[int, int], n_filters: int, n_layers: int):
     model = models.Sequential()
     model.add(layers.Conv2D(n_filters, (3, 3), activation="relu", input_shape=(input_shape[0], input_shape[1], 1)))

@@ -44,7 +44,7 @@ def bulk_extract(directory: str,
                  summarize: bool = False,
                  cache=True,
                  use_cached=True
-                 ) -> list[Tuple[Union[np.ndarray, float, dict]]]:
+                 ) -> list[Tuple[str, Union[np.ndarray, float, dict]]]:
     if directory[-1] != "/":
         directory = directory + "/"
     cache_path = "./extracted_features/" + directory[:-1].split("/")[-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
