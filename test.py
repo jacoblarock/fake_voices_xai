@@ -19,6 +19,6 @@ if __name__ == "__main__":
     print("labels")
     matched_labels = classification.match_labels(labels, hnrs, "hnrs")
     print(matched_labels)
-    model = networks.create_cnn_1d(10, 32, 3)
+    model = networks.create_cnn_1d(10, 32, 2)
     history = classification.train(matched_labels, model, 10)
     print(history)
