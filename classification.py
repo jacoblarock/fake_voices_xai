@@ -44,6 +44,41 @@ def match_labels(labels: pd.DataFrame,
                 pickle.dump(extracted_features, file)
     return extracted_features
 
+def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
+    if len(arr.shape) != 1:
+        raise Exception("Vertical size of array to morph must be 1")
+    out = np.ndarray((vsize, arr.shape[0]))
+    for i in range(vsize):
+        out[i] = arr.copy()
+    return out
+
+def merge(matched_labels: pd.DataFrame,
+          feature: pd.DataFrame
+          ) -> pd.DataFrame:
+    if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
+        if len(matched_labels) == len(feature):
+            matched_labels = matched_labels.sort_values(by=[0, 1])
+            feature = feature.sort_values(by=[0, 1])
+            # morph sizes if number of dimensions is different
+            vsize_matched_labels = 1
+            if len(matched_labels[2][0].shape) > 0:
+                vsize_matched_labels = matched_labels[2][0].shape[1]
+            vsize_feature = 1
+            if len(matched_labels[2][0].shape) > 0:
+                vsize_feature = feature[2][0].shape[1]
+            if vsize_matched_labels == 1 and vsize_feature != 1:
+                matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
+            if vsize_matched_labels != 1 and vsize_feature == 1:
+                feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
+            # add temp column for merge
+            matched_labels["temp"] = feature[2].copy()
+            # concat feature in 2 and feature in temp
+            for i in range(len(matched_labels)):
+                a = matched_labels.loc[i, 2]
+                b = matched_labels.loc[i, "temp"]
+                matched_labels.loc[i, 2] = np.concatenate((a, b))
+            matched_labels.drop("temp")
+    return matched_labels
 
 def train(matched_labels: pd.DataFrame,
              model: networks.models.Sequential,
