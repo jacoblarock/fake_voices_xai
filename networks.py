@@ -29,6 +29,7 @@ def create_cnn_1d(input_shape: int, n_filters: int, n_layers: int) -> models.Seq
     for layer in range(n_layers - 1):
         model.add(layers.MaxPooling1D(2))
         model.add(layers.Conv1D(n_filters, 3, activation="relu"))
+    model.add(layers.Flatten())
     model.add(layers.Dense(1))
     model.compile(optimizer="adam",
                   loss=losses.SparseCategoricalCrossentropy(from_logits=True),
@@ -36,6 +37,6 @@ def create_cnn_1d(input_shape: int, n_filters: int, n_layers: int) -> models.Seq
     return model
 
 if __name__ == "__main__":
-    model = create_cnn_2d((100, 200), 32, 4)
+    model = create_cnn_1d(10, 32, 2)
+    # model = create_cnn_2d((10, 10), 32, 2)
     print(model.summary())
-    # print(create_cnn_1d(100, 32, 4))
