@@ -1,6 +1,7 @@
 import feature_extraction
-import matplotlib.pyplot as plt
 import classification
+import networks
+import matplotlib.pyplot as plt
 print("dependencies loaded")
 
 def plot_1d(data_arr):
@@ -16,5 +17,8 @@ if __name__ == "__main__":
     print("hnrs extracted")
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
     print("labels")
-    extracted_features = classification.match_labels(labels, hnrs, "hnrs")
-    print(extracted_features)
+    matched_labels = classification.match_labels(labels, hnrs, "hnrs")
+    print(matched_labels)
+    model = networks.create_cnn_1d(10, 32, 3)
+    history = classification.train(matched_labels, model, 10)
+    print(history)

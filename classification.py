@@ -45,7 +45,11 @@ def match_labels(labels: pd.DataFrame,
     return extracted_features
 
 
-def classify(matched_labels: pd.DataFrame,
-             model: networks.models.Sequential
-             ) -> None:
-    model.fit()
+def train(matched_labels: pd.DataFrame,
+             model: networks.models.Sequential,
+             epochs: int
+             ):
+    x = matched_labels[2]
+    y = matched_labels["label"]
+    history = model.fit(x=x, y=y, epochs=epochs)
+    return history
