@@ -49,7 +49,7 @@ def train(matched_labels: pd.DataFrame,
              model: networks.models.Sequential,
              epochs: int
              ):
-    x = matched_labels[2]
-    y = matched_labels["label"]
+    x = matched_labels[2].to_numpy
+    y = matched_labels["label"].to_numpy
     history = model.fit(x=x, y=y, epochs=epochs)
     return history
