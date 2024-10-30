@@ -10,8 +10,10 @@ import pandas as pd
 universal_fmin = 65
 universal_fmax = 2093
 
-# Loads a from a given path and returns samples and sample rate
-# Performs automatic downsampling if necessary (large audio files)
+"""
+Loads a from a given path and returns samples and sample rate
+Performs automatic downsampling if necessary (large audio files)
+"""
 def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
     sr = lr.get_samplerate(filepath)
     while True:

@@ -6,6 +6,14 @@ import pickle
 import feature_extraction
 import networks
 
+"""
+Returns labels from a csv file in a standardized dataframe. this is necessary for efficient label matching.
+Arguments:
+ - path: the path of the label file
+ - label_col: the name of the column containing labels in the file
+ - label_0_val: value in the file of the result 0
+ - label_1_val: value in the file of the result 1
+"""
 def get_labels(path: str,
                name_col: str,
                label_col: str,
@@ -20,6 +28,17 @@ def get_labels(path: str,
     data = data.loc[:, ["name", "label"]]
     return data
 
+"""
+Modifies the extracted_features dataframe to include labels from a labels dataframe.
+This dataframe is also returned.
+Arguments:
+ - labels: previously extracted label dataframe
+ - name: name of the matched label set for caching purposes
+Keyword arguments:
+ - cache: if True, data will be saved to the cache
+ - use_cached: if True, previously cached data will be used, if it exists
+WARNING: The input extracted_features dataframe WILL be modified due to memory reasons
+"""
 def match_labels(labels: pd.DataFrame,
                  extracted_features: pd.DataFrame,
                  name: str,
@@ -44,6 +63,8 @@ def match_labels(labels: pd.DataFrame,
                 pickle.dump(extracted_features, file)
     return extracted_features
 
+# meant for internal use
+# expand a one dimensional array into two dimensions
 def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
     if len(arr.shape) != 1:
         raise Exception("Vertical size of array to morph must be 1")
@@ -52,6 +73,14 @@ def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
         out[i] = arr.copy()
     return out
 
+# TODO: Support for merging features with and without the sliding window
+"""
+Modifies an input dataframe of matched labels to include a further feature.
+Arguments:
+ - matched_labels: previously generated dataframe of matched labels and features(s)
+ - feature: new feature to add to matched_labels
+WARNING: The input matched_labels dataframe WILL be modified due to memory reasons
+"""
 def merge(matched_labels: pd.DataFrame,
           feature: pd.DataFrame
           ) -> pd.DataFrame:
@@ -80,10 +109,17 @@ def merge(matched_labels: pd.DataFrame,
             matched_labels.drop("temp")
     return matched_labels
 
+"""
+Trains an input model based on previously matched labels and features
+Arguments:
+ - matched_labels: previously generated dataframe of matched labels and features(s)
+ - model: model to train
+ - epochs: number of epochs to train
+"""
 def train(matched_labels: pd.DataFrame,
-             model: networks.models.Sequential,
-             epochs: int
-             ):
+          model: networks.models.Sequential,
+          epochs: int
+          ):
     x = np.array(list(matched_labels[2]))
     y = np.array(list(matched_labels["label"]))
     history = model.fit(x=x, y=y, epochs=epochs)
