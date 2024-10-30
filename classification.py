@@ -1,6 +1,8 @@
 from typing import Tuple, Union
 import numpy as np
 import pandas as pd
+import os
+import pickle
 import feature_extraction
 import networks
 
@@ -18,26 +20,29 @@ def get_labels(path: str,
     data = data.loc[:, ["name", "label"]]
     return data
 
-def match_labels(data: pd.DataFrame,
-                 extracted_features: list[Tuple[str, Union[np.ndarray, float, dict]]],
-                 feature_name: str
+def match_labels(labels: pd.DataFrame,
+                 extracted_features: pd.DataFrame,
+                 name: str,
+                 cache: bool = True,
+                 use_cached: bool = True
                  ) -> pd.DataFrame:
-    out = data
-    out[feature_name] = None
-    for result in extracted_features:
-        name = result[0]
-        print(name)
-        if len(out[out["name"] == name]) == 0:
-            index = len(out)
-            plain_name = name
-            while 48 <= ord(plain_name[-1]) <= 57:
-                plain_name = plain_name[:-1]
-            plain_index = out[out["name"] == plain_name].index[0]
-            out.loc[index] = out.loc[plain_index]
-        else:
-            index = out[out["name"] == name].index[0]
-        out.at[index, feature_name] = result[1]
-    return out
+    if cache or use_cached:
+        feature_extraction.check_cache()
+    cache_path = "./cache/matched_labels" + name
+    if os.path.isfile(cache_path):
+        with open(cache_path, "rb") as file:
+            extracted_features = pickle.load(file)
+    else:
+        extracted_features["label"] = None
+        for i in labels.index:
+            name = labels.loc[i, "name"]
+            label = labels.loc[i, "label"]
+            to_label = extracted_features[0] == name
+            extracted_features.loc[to_label, "label"] = label
+        if cache:
+            with open(cache_path, "wb") as file:
+                pickle.dump(extracted_features, file)
+    return extracted_features
 
 
 def classify(matched_labels: pd.DataFrame,

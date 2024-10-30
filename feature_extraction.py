@@ -5,11 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pickle
+import pandas as pd
 
 universal_fmin = 65
 universal_fmax = 2093
 
-# File loaders
+# Loads a from a given path and returns samples and sample rate
+# Performs automatic downsampling if necessary (large audio files)
 def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
     sr = lr.get_samplerate(filepath)
     while True:
@@ -21,6 +23,20 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
             sr = int(sr * 0.8)
             print("NP Array too large, downsampling audio to: " + str(sr))
     return samples, sr
+
+def check_cache() -> int:
+    cache_paths = ["./cache",
+                   "./cache/extracted_features",
+                   "./cache/matched_labels"
+                   ]
+    complete = 1
+    for path in cache_paths:
+        if not os.path.exists(path):
+            try:
+                os.mkdir(path)
+            except:
+                return -1
+    return 0
 
 # TODO: MULTITHREADING!!!
 """
@@ -44,10 +60,12 @@ def bulk_extract(directory: str,
                  summarize: bool = False,
                  cache=True,
                  use_cached=True
-                 ) -> list[Tuple[str, Union[np.ndarray, float, dict]]]:
+                 ) -> pd.DataFrame:
+    if cache or use_cached:
+        check_cache()
     if directory[-1] != "/":
         directory = directory + "/"
-    cache_path = "./extracted_features/" + directory[:-1].split("/")[-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
+    cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
     out = []
     if os.path.isfile(cache_path) and use_cached:
         with open(cache_path, "rb") as file:
@@ -65,19 +83,19 @@ def bulk_extract(directory: str,
                     window = sliding_window.window(extracted_feature, window_length)
                     i = 0
                     state = 1
-                    out.append((file + str(i), window.get_window()))
+                    out.append((file, i, window.get_window()))
                     while state == 1:
                         i += 1
                         state = window.hop(0.5)
-                        out.append((file + str(i), window.get_window()))
+                        out.append((file, i, window.get_window()))
                 else:
-                    out.append((file, extracted_feature))
+                    out.append((file, 0, extracted_feature))
             if summarize:
-                out.append((file, get_summary_stats(feature(samples, sample_rate, *args))))
+                out.append((file, 0, get_summary_stats(feature(samples, sample_rate, *args))))
         if cache:
             with open(cache_path, "wb") as file:
-                pickle.dump(out, file)
-    return out
+                pickle.dump(pd.DataFrame(out), file)
+    return pd.DataFrame(out)
 
 # Summarize the results of a calculation resulting in an array into quartiles
 # How does this affect classification?
@@ -87,6 +105,10 @@ def get_summary_stats(data: np.ndarray) -> dict:
     for i in range(1, 10):
         out[i/10] = np.quantile(data, i/10)
     return out
+
+# -----
+# Below are individual feature extraction functions
+# -----
 
 def gen_mel_spec(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     # Short-time Fourier transform 

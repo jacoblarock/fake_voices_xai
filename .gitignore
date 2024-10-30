@@ -167,5 +167,5 @@ cython_debug/
 *.mp3
 # Folder for datasets
 datasets/
-# cached extracted features
-extracted_features/*
+# cache 
+cache/*
