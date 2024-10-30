@@ -10,11 +10,11 @@ import pandas as pd
 universal_fmin = 65
 universal_fmax = 2093
 
-"""
-Loads a from a given path and returns samples and sample rate
-Performs automatic downsampling if necessary (large audio files)
-"""
 def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
+    """
+    Loads a from a given path and returns samples and sample rate
+    Performs automatic downsampling if necessary (large audio files)
+    """
     sr = lr.get_samplerate(filepath)
     while True:
         try:
@@ -41,19 +41,6 @@ def check_cache() -> int:
     return 0
 
 # TODO: MULTITHREADING!!!
-"""
-Apply a given feature extractor to a directory of files.
-Positional arguments:
- - directory: directory path to search in
- - extension: extension of the files (for example, ".wav")
- - feature: Callable to apply to the audio files
- - args: arguments for the feature extractor function, if necessary, for example gen_mfcc expects a "count" argument.
-Keyword arguments:
- - summarize: whether the results (if results are np.ndarray) should be summarizes into quantiles (default False)
- - cache: whether the results should be cached (default True)
- - use_cached: whether previously cached results should be returned (default True)
-   NOTE: cache=True and use_cached=False will overwrite an existing cache, if one exists
-"""
 def bulk_extract(directory: str,
                  extension: str,
                  feature: Callable,
@@ -63,6 +50,19 @@ def bulk_extract(directory: str,
                  cache=True,
                  use_cached=True
                  ) -> pd.DataFrame:
+    """
+    Apply a given feature extractor to a directory of files.
+    Positional arguments:
+     - directory: directory path to search in
+     - extension: extension of the files (for example, ".wav")
+     - feature: Callable to apply to the audio files
+     - args: arguments for the feature extractor function, if necessary, for example gen_mfcc expects a "count" argument.
+    Keyword arguments:
+     - summarize: whether the results (if results are np.ndarray) should be summarizes into quantiles (default False)
+     - cache: whether the results should be cached (default True)
+     - use_cached: whether previously cached results should be returned (default True)
+       NOTE: cache=True and use_cached=False will overwrite an existing cache, if one exists
+    """
     if cache or use_cached:
         check_cache()
     if directory[-1] != "/":

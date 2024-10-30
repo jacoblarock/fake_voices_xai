@@ -6,20 +6,20 @@ import pickle
 import feature_extraction
 import networks
 
-"""
-Returns labels from a csv file in a standardized dataframe. this is necessary for efficient label matching.
-Arguments:
- - path: the path of the label file
- - label_col: the name of the column containing labels in the file
- - label_0_val: value in the file of the result 0
- - label_1_val: value in the file of the result 1
-"""
 def get_labels(path: str,
                name_col: str,
                label_col: str,
                label_0_val: str,
                label_1_val: str
                ) -> pd.DataFrame:
+    """
+    Returns labels from a csv file in a standardized dataframe. this is necessary for efficient label matching.
+    Arguments:
+     - path: the path of the label file
+     - label_col: the name of the column containing labels in the file
+     - label_0_val: value in the file of the result 0
+     - label_1_val: value in the file of the result 1
+    """
     data = pd.read_csv(path)
     data = data.rename(columns={label_col: "label"})
     data = data.rename(columns={name_col: "name"})
@@ -28,23 +28,23 @@ def get_labels(path: str,
     data = data.loc[:, ["name", "label"]]
     return data
 
-"""
-Modifies the extracted_features dataframe to include labels from a labels dataframe.
-This dataframe is also returned.
-Arguments:
- - labels: previously extracted label dataframe
- - name: name of the matched label set for caching purposes
-Keyword arguments:
- - cache: if True, data will be saved to the cache
- - use_cached: if True, previously cached data will be used, if it exists
-WARNING: The input extracted_features dataframe WILL be modified due to memory reasons
-"""
 def match_labels(labels: pd.DataFrame,
                  extracted_features: pd.DataFrame,
                  name: str,
                  cache: bool = True,
                  use_cached: bool = True
                  ) -> pd.DataFrame:
+    """
+    Modifies the extracted_features dataframe to include labels from a labels dataframe.
+    This dataframe is also returned.
+    Arguments:
+     - labels: previously extracted label dataframe
+     - name: name of the matched label set for caching purposes
+    Keyword arguments:
+     - cache: if True, data will be saved to the cache
+     - use_cached: if True, previously cached data will be used, if it exists
+    WARNING: The input extracted_features dataframe WILL be modified due to memory reasons
+    """
     if cache or use_cached:
         feature_extraction.check_cache()
     cache_path = "./cache/matched_labels" + name
@@ -74,16 +74,16 @@ def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
     return out
 
 # TODO: Support for merging features with and without the sliding window
-"""
-Modifies an input dataframe of matched labels to include a further feature.
-Arguments:
- - matched_labels: previously generated dataframe of matched labels and features(s)
- - feature: new feature to add to matched_labels
-WARNING: The input matched_labels dataframe WILL be modified due to memory reasons
-"""
 def merge(matched_labels: pd.DataFrame,
           feature: pd.DataFrame
           ) -> pd.DataFrame:
+    """
+    Modifies an input dataframe of matched labels to include a further feature.
+    Arguments:
+     - matched_labels: previously generated dataframe of matched labels and features(s)
+     - feature: new feature to add to matched_labels
+    WARNING: The input matched_labels dataframe WILL be modified due to memory reasons
+    """
     if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
         if len(matched_labels) == len(feature):
             matched_labels = matched_labels.sort_values(by=[0, 1])
@@ -109,17 +109,17 @@ def merge(matched_labels: pd.DataFrame,
             matched_labels.drop("temp")
     return matched_labels
 
-"""
-Trains an input model based on previously matched labels and features
-Arguments:
- - matched_labels: previously generated dataframe of matched labels and features(s)
- - model: model to train
- - epochs: number of epochs to train
-"""
 def train(matched_labels: pd.DataFrame,
           model: networks.models.Sequential,
           epochs: int
           ):
+    """
+    Trains an input model based on previously matched labels and features
+    Arguments:
+     - matched_labels: previously generated dataframe of matched labels and features(s)
+     - model: model to train
+     - epochs: number of epochs to train
+    """
     x = np.array(list(matched_labels[2]))
     y = np.array(list(matched_labels["label"]))
     history = model.fit(x=x, y=y, epochs=epochs)
