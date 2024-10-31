@@ -89,10 +89,10 @@ def merge(matched_labels: pd.DataFrame,
         feature = feature.sort_values(by=[0, 1])
         # morph sizes if number of dimensions is different
         vsize_matched_labels = 1
-        if len(matched_labels[2][0].shape) > 0:
+        if len(matched_labels[2][0].shape) > 1:
             vsize_matched_labels = matched_labels[2][0].shape[1]
         vsize_feature = 1
-        if len(matched_labels[2][0].shape) > 0:
+        if len(matched_labels[2][0].shape) > 1:
             vsize_feature = feature[2][0].shape[1]
         if vsize_matched_labels == 1 and vsize_feature != 1:
             matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
