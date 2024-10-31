@@ -102,10 +102,10 @@ def merge(matched_labels: pd.DataFrame,
         matched_labels = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="inner", rsuffix=".temp")
         # concat feature in 2 and feature in temp
         for i in matched_labels.index:
-            a = matched_labels.loc[i, 2]
+            a = matched_labels.loc[i, "2"]
             b = matched_labels.loc[i, "2.temp"]
-            matched_labels.loc[i, 2] = np.concatenate((a, b))
-        matched_labels = matched_labels.drop("temp")
+            matched_labels.loc[i, "2"] = np.concatenate((a, b))
+        matched_labels = matched_labels.drop("2.temp")
     else:
         raise Exception("Case for data types not yet implemented or incompatible")
     return matched_labels
