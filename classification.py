@@ -85,28 +85,29 @@ def merge(matched_labels: pd.DataFrame,
     WARNING: The input matched_labels dataframe WILL be modified due to memory reasons
     """
     if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
-        if len(matched_labels) == len(feature):
-            matched_labels = matched_labels.sort_values(by=[0, 1])
-            feature = feature.sort_values(by=[0, 1])
-            # morph sizes if number of dimensions is different
-            vsize_matched_labels = 1
-            if len(matched_labels[2][0].shape) > 0:
-                vsize_matched_labels = matched_labels[2][0].shape[1]
-            vsize_feature = 1
-            if len(matched_labels[2][0].shape) > 0:
-                vsize_feature = feature[2][0].shape[1]
-            if vsize_matched_labels == 1 and vsize_feature != 1:
-                matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
-            if vsize_matched_labels != 1 and vsize_feature == 1:
-                feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
-            # add temp column for merge
-            matched_labels["temp"] = feature[2].copy()
-            # concat feature in 2 and feature in temp
-            for i in range(len(matched_labels)):
-                a = matched_labels.loc[i, 2]
-                b = matched_labels.loc[i, "temp"]
-                matched_labels.loc[i, 2] = np.concatenate((a, b))
-            matched_labels.drop("temp")
+        matched_labels = matched_labels.sort_values(by=[0, 1])
+        feature = feature.sort_values(by=[0, 1])
+        # morph sizes if number of dimensions is different
+        vsize_matched_labels = 1
+        if len(matched_labels[2][0].shape) > 0:
+            vsize_matched_labels = matched_labels[2][0].shape[1]
+        vsize_feature = 1
+        if len(matched_labels[2][0].shape) > 0:
+            vsize_feature = feature[2][0].shape[1]
+        if vsize_matched_labels == 1 and vsize_feature != 1:
+            matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
+        if vsize_matched_labels != 1 and vsize_feature == 1:
+            feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
+        # perform join
+        matched_labels = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="inner", rsuffix=".temp")
+        # concat feature in 2 and feature in temp
+        for i in range(len(matched_labels)):
+            a = matched_labels.loc[i, 2]
+            b = matched_labels.loc[i, "2.temp"]
+            matched_labels.loc[i, 2] = np.concatenate((a, b))
+        matched_labels = matched_labels.drop("temp")
+    else:
+        raise Exception("Case for data types not yet implemented or incompatible")
     return matched_labels
 
 def train(matched_labels: pd.DataFrame,

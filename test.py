@@ -24,7 +24,7 @@ if __name__ == "__main__":
     merged = classification.merge(matched_labels, mel_spec)
     print("merged")
     print(merged)
-    model = networks.create_cnn_1d(20, 32, 2)
+    model = networks.create_cnn_2d((20, 200), 32, 2)
     print(model.summary())
     history = classification.train(matched_labels, model, 10)
     print(history.history)
