@@ -86,6 +86,8 @@ def merge(matched_labels: pd.DataFrame,
     """
     if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
         matched_labels = matched_labels.sort_values(by=[0, 1])
+        print(matched_labels[2][0])
+        print(feature[2][0])
         feature = feature.sort_values(by=[0, 1])
         # morph sizes if number of dimensions is different
         vsize_matched_labels = 1
@@ -102,9 +104,11 @@ def merge(matched_labels: pd.DataFrame,
         matched_labels = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="inner", rsuffix=".temp")
         # concat feature in 2 and feature in temp
         for i in matched_labels.index:
-            print(matched_labels)
             a = matched_labels.loc[i, "2"]
             b = matched_labels.loc[i, "2.temp"]
+            if i == 0:
+                print(a)
+                print(b)
             matched_labels.loc[i, "2"] = np.concatenate((a, b))
         matched_labels = matched_labels.drop("2.temp")
     else:
