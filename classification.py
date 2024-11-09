@@ -47,7 +47,7 @@ def match_labels(labels: pd.DataFrame,
     """
     if cache or use_cached:
         feature_extraction.check_cache()
-    cache_path = "./cache/matched_labels" + name
+    cache_path = "./cache/matched_labels/" + name
     if os.path.isfile(cache_path):
         with open(cache_path, "rb") as file:
             extracted_features = pickle.load(file)
