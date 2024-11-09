@@ -45,6 +45,7 @@ def bulk_extract(directory: str,
                  extension: str,
                  feature: Callable,
                  args: list,
+                 file_list: list[str] = [],
                  window_length: int = 10,
                  window_height: int = 10,
                  summarize: bool = False,
@@ -74,7 +75,10 @@ def bulk_extract(directory: str,
         with open(cache_path, "rb") as file:
             out = pickle.load(file)
     else:
-        files = os.listdir(directory)
+        if len(file_list) == 0:
+            files = os.listdir(directory)
+        else:
+            files = file_list
         for file in files:
             if file[-len(extension):] != extension:
                 files.remove(file)
