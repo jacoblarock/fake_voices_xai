@@ -46,6 +46,7 @@ def bulk_extract(directory: str,
                  feature: Callable,
                  args: list,
                  window_length: int = 10,
+                 window_height: int = 10,
                  summarize: bool = False,
                  cache=True,
                  use_cached=True
@@ -82,13 +83,13 @@ def bulk_extract(directory: str,
             if not summarize:
                 extracted_feature = feature(samples, sample_rate, *args)
                 if type(extracted_feature) == np.ndarray:
-                    window = sliding_window.window(extracted_feature, window_length)
+                    window = sliding_window.window(extracted_feature, window_length, window_height)
                     i = 0
                     state = 1
                     out.append((file, i, window.get_window()))
                     while state == 1:
                         i += 1
-                        state = window.hop(0.5)
+                        state = window.smart_hop(0.5)
                         out.append((file, i, window.get_window()))
                 else:
                     out.append((file, 0, extracted_feature))
