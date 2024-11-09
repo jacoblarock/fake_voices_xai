@@ -30,6 +30,7 @@ def check_cache() -> int:
     cache_paths = ["./cache",
                    "./cache/extracted_features",
                    "./cache/matched_labels"
+                   "./cache/mt_ops"
                    ]
     complete = 1
     for path in cache_paths:

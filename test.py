@@ -14,23 +14,26 @@ def plot_2d(data_arr):
     plt.show()
 
 if __name__ == "__main__":
-    hnrs = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
-    # hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
-    #                                "./datasets/release_in_the_wild",
-    #                                args=["./datasets/release_in_the_wild",
-    #                                      "wav",
-    #                                      feature_extraction.get_hnrs,
-    #                                      []]
-    #                                )
+    feature_extraction.check_cache()
+    # hnrs = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
+    hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   "./datasets/release_in_the_wild",
+                                   args=["./datasets/release_in_the_wild",
+                                         "wav",
+                                         feature_extraction.get_hnrs,
+                                         []],
+                                   kwargs={"cache": False, "use_cached": False}
+                                   )
     print("hnrs extracted")
-    mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
-    # mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
-    #                                "./datasets/release_in_the_wild",
-    #                                args=["./datasets/release_in_the_wild",
-    #                                      "wav",
-    #                                      feature_extraction.gen_mel_spec,
-    #                                      []]
-    #                                )
+    # mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
+    mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   "./datasets/release_in_the_wild",
+                                   args=["./datasets/release_in_the_wild",
+                                         "wav",
+                                         feature_extraction.gen_mel_spec,
+                                         []],
+                                   kwargs={"cache": False, "use_cached": False}
+                                   )
     print("mel extracted")
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
     print("labels")
