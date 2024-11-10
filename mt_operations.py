@@ -19,13 +19,18 @@ def wrapper(func, args, kwargs, batch):
 def file_func(func: Callable,
               directory: str,
               cache: bool = True,
+              cache_name: str | None = None,
               use_cached: bool = True,
               args: list = [],
               kwargs: dict = {},
               batch_size: int = 100) -> pd.DataFrame:
     if directory[-1] != "/":
         directory = directory + "/"
-    cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + func.__name__
+    if cache_name == None:
+        cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + func.__name__
+    else:
+        cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + cache_name
+    print(cache_path)
     if os.path.isfile(cache_path) and use_cached:
         with open(cache_path, "rb") as file:
             return pickle.load(file)
@@ -35,7 +40,7 @@ def file_func(func: Callable,
     for i in range(0, len(files) - batch_size, batch_size):
         batches.append(files[i:i+batch_size])
     batches.append(files[-(len(files) % batch_size):])
-    with mp.Pool() as pool:
+    with mp.Pool(min(mp.cpu_count(), 32)) as pool:
         batch_results = pool.map(partial(wrapper, func, args, kwargs), batches)
     out = pd.concat(batch_results, ignore_index=True)
     if cache:

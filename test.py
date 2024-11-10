@@ -22,7 +22,9 @@ if __name__ == "__main__":
                                          "wav",
                                          feature_extraction.get_hnrs,
                                          []],
-                                   kwargs={"cache": False, "use_cached": False}
+                                   kwargs={"cache": False,
+                                           "use_cached": False},
+                                   cache_name="hnrs"
                                    )
     print("hnrs extracted")
     # mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
@@ -32,7 +34,9 @@ if __name__ == "__main__":
                                          "wav",
                                          feature_extraction.gen_mel_spec,
                                          []],
-                                   kwargs={"cache": False, "use_cached": False}
+                                   kwargs={"cache": False,
+                                           "use_cached": False},
+                                   cache_name="mel_spec"
                                    )
     print("mel extracted")
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
