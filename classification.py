@@ -115,7 +115,7 @@ def merge(matched_labels: pd.DataFrame,
         #     print(res)
         #     matched_labels.loc[i, "2"] = [res]
         print(matched_labels)
-        matched_labels = matched_labels.drop("2.temp")
+        matched_labels = matched_labels.drop("2.temp", axis=1)
         print(matched_labels)
     else:
         raise Exception("Case for data types not yet implemented or incompatible")
