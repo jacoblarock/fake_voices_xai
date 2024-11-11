@@ -127,7 +127,10 @@ def train(matched_labels: pd.DataFrame,
      - model: model to train
      - epochs: number of epochs to train
     """
-    x = np.array(list(matched_labels[2]))
+    if 2 in matched_labels.columns:
+        x = np.array(list(matched_labels[2]))
+    else:
+        x = np.array(list(matched_labels["2"]))
     y = np.array(list(matched_labels["label"]))
     history = model.fit(x=x, y=y, epochs=epochs)
     return history

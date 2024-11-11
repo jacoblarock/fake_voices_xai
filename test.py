@@ -15,6 +15,8 @@ def plot_2d(data_arr):
 
 if __name__ == "__main__":
     feature_extraction.check_cache()
+
+    # generate hnrs with the default 10 long sliding window
     # hnrs = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    "./datasets/release_in_the_wild",
@@ -27,6 +29,8 @@ if __name__ == "__main__":
                                    cache_name="hnrs"
                                    )
     print("hnrs extracted")
+
+    # generate mel specs with the default 10x10 sliding window
     # mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
     mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
                                    "./datasets/release_in_the_wild",
@@ -39,6 +43,8 @@ if __name__ == "__main__":
                                    cache_name="mel_spec"
                                    )
     print("mel extracted")
+
+    # label and merge the features
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
     print("labels")
     matched_labels = classification.match_labels(labels, hnrs, "hnrs")
@@ -47,7 +53,9 @@ if __name__ == "__main__":
     print("merged")
     print(merged)
     print(merged["2"][0].shape)
+
+    # create and train the model
     model = networks.create_cnn_2d((20, 10), 32, 2)
     print(model.summary())
-    history = classification.train(matched_labels, model, 10)
+    history = classification.train(merged, model, 10)
     print(history.history)
