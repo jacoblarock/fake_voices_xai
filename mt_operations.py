@@ -30,7 +30,6 @@ def file_func(func: Callable,
         cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + func.__name__
     else:
         cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + cache_name
-    print(cache_path)
     if os.path.isfile(cache_path) and use_cached:
         with open(cache_path, "rb") as file:
             return pickle.load(file)

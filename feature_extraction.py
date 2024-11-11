@@ -73,7 +73,6 @@ def bulk_extract(directory: str,
     cache_path = "./cache/extracted_features/" + directory[:-1].split("/")[-1] + "_" + feature.__name__ + ("_sum" if summarize else "")
     out = []
     if os.path.isfile(cache_path) and use_cached:
-        print("oopsie!")
         with open(cache_path, "rb") as file:
             out = pickle.load(file)
     else:

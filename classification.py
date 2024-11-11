@@ -87,7 +87,6 @@ def merge(matched_labels: pd.DataFrame,
     if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
         matched_labels = matched_labels.sort_values(by=[0, 1])
         feature = feature.sort_values(by=[0, 1])
-        print(feature[2][0])
         # morph sizes if number of dimensions is different
         vsize_matched_labels = 1
         if len(matched_labels[2][0].shape) > 1:
@@ -95,8 +94,6 @@ def merge(matched_labels: pd.DataFrame,
         vsize_feature = 1
         if len(feature[2][0].shape) > 1:
             vsize_feature = feature[2][0].shape[1]
-        print(vsize_matched_labels)
-        print(vsize_feature)
         if vsize_matched_labels == 1 and vsize_feature != 1:
             matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
         if vsize_matched_labels != 1 and vsize_feature == 1:
@@ -114,9 +111,7 @@ def merge(matched_labels: pd.DataFrame,
         #     res = tuple(np.concatenate((a, b)))
         #     print(res)
         #     matched_labels.loc[i, "2"] = [res]
-        print(matched_labels)
         matched_labels = matched_labels.drop("2.temp", axis=1)
-        print(matched_labels)
     else:
         raise Exception("Case for data types not yet implemented or incompatible")
     return matched_labels
