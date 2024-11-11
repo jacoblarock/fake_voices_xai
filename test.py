@@ -16,7 +16,7 @@ def plot_2d(data_arr):
 if __name__ == "__main__":
     feature_extraction.check_cache()
 
-    # generate hnrs with the default 10 long sliding window
+    # generate hnrs
     # hnrs = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.get_hnrs, [])
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    "./datasets/release_in_the_wild",
@@ -25,12 +25,14 @@ if __name__ == "__main__":
                                          feature_extraction.get_hnrs,
                                          []],
                                    kwargs={"cache": False,
-                                           "use_cached": False},
+                                           "use_cached": False,
+                                           "window_length": 30,
+                                           "window_height": 30},
                                    cache_name="hnrs"
                                    )
     print("hnrs extracted")
 
-    # generate mel specs with the default 10x10 sliding window
+    # generate mel specs
     # mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
     mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
                                    "./datasets/release_in_the_wild",
@@ -39,7 +41,9 @@ if __name__ == "__main__":
                                          feature_extraction.gen_mel_spec,
                                          []],
                                    kwargs={"cache": False,
-                                           "use_cached": False},
+                                           "use_cached": False,
+                                           "window_length": 30,
+                                           "window_height": 30},
                                    cache_name="mel_spec"
                                    )
     print("mel extracted")
@@ -55,7 +59,7 @@ if __name__ == "__main__":
     print(merged["2"][0].shape)
 
     # create and train the model
-    model = networks.create_cnn_2d((20, 10), 32, 2)
+    model = networks.create_cnn_2d((20, 10), 32, 2, pooling=False)
     print(model.summary())
     history = classification.train(merged, model, 10)
     print(history.history)
