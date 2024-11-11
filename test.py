@@ -46,6 +46,7 @@ if __name__ == "__main__":
     merged = classification.merge(matched_labels, mel_spec)
     print("merged")
     print(merged)
+    print(merged["2"][0].shape)
     # model = networks.create_cnn_2d((20, 200), 32, 2)
     # print(model.summary())
     # history = classification.train(matched_labels, model, 10)
