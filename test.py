@@ -59,7 +59,7 @@ if __name__ == "__main__":
     print(merged["2"][0].shape)
 
     # create and train the model
-    model = networks.create_cnn_2d((20, 10), 32, 2, pooling=False)
+    model = networks.create_cnn_2d((60, 30), 32, 2, pooling=False)
     print(model.summary())
     history = classification.train(merged, model, 10)
     print(history.history)
