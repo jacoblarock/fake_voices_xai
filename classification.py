@@ -99,7 +99,7 @@ def merge(matched_labels: pd.DataFrame,
         if vsize_matched_labels != 1 and vsize_feature == 1:
             feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
         # perform join
-        matched_labels = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="inner", rsuffix=".temp")
+        matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="cross", rsuffix=".temp")
         # concat feature in 2 and feature in temp
         matched_labels["2"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
         # for i in matched_labels.index:
