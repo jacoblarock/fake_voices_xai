@@ -56,6 +56,7 @@ if __name__ == "__main__":
     matched_labels = classification.merge(matched_labels, mel_spec)
     print("merged")
     print(matched_labels)
+    print(matched_labels.shape)
     print(matched_labels["2"][0].shape)
 
     # create and train the model
