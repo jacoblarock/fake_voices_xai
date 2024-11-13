@@ -53,13 +53,13 @@ if __name__ == "__main__":
     print("labels")
     matched_labels = classification.match_labels(labels, hnrs, "hnrs")
     print("matched labels")
-    merged = classification.merge(matched_labels, mel_spec)
+    matched_labels = classification.merge(matched_labels, mel_spec)
     print("merged")
-    print(merged)
-    print(merged["2"][0].shape)
+    print(matched_labels)
+    print(matched_labels["2"][0].shape)
 
     # create and train the model
     model = networks.create_cnn_2d((60, 30), 32, 2, pooling=False)
     print(model.summary())
-    history = classification.train(merged, model, 10)
+    history = classification.train(matched_labels, model, 10)
     print(history.history)
