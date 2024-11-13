@@ -98,8 +98,9 @@ def merge(matched_labels: pd.DataFrame,
             matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
         if vsize_matched_labels != 1 and vsize_feature == 1:
             feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
-        # perform join
-        matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="cross", rsuffix=".temp")
+        # perform join and filter
+        matched_labels = matched_labels.join(feature, how="cross", rsuffix=".temp")
+        matched_labels = matched_labels[matched_labels["0"] == matched_labels["0.temp"]]
         # concat feature in 2 and feature in temp
         matched_labels["2"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
         # for i in matched_labels.index:
