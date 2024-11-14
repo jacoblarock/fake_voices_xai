@@ -49,8 +49,8 @@ class window:
         returns 1 when the hop is made
         returns 0 when the hop could not be made, in which case the window moves to the final position
         """
-        if self.y + (self.window_length * factor) + self.window_length < len(self.arr):
-            self.y += int(self.window_length * factor + 1)
+        if self.y + (self.window_height * factor) + self.window_height < len(self.arr[0]):
+            self.y += int(self.window_height * factor + 1)
             return 1
         self.y = len(self.arr[0]) - self.window_height
         return 0
@@ -92,16 +92,17 @@ class window:
                             self.y:(self.y + self.window_height)]
 
 if __name__ == "__main__":
-    test_win = np.ndarray((5, 5))
+    test_win = np.ndarray((20, 5))
     for x in range(test_win.shape[0]):
-        # for y in range(test_win.shape[1]):
-        #     test_win[x, y] = x * 100 + y
-        test_win[x] = x
+        for y in range(test_win.shape[1]):
+            test_win[x, y] = x * 100 + y
     win = window(test_win, 10)
     res = 1
+    print(win.x, win.y)
     print(win.get_window())
     print()
     while res == 1:
         res = win.smart_hop(0.5)
+        print(win.x, win.y, win.arr.shape, len(win.arr[0]))
         print(win.get_window())
         print()
