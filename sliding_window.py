@@ -92,7 +92,7 @@ class window:
                             self.y:(self.y + self.window_height)]
 
 if __name__ == "__main__":
-    test_win = np.ndarray(5)
+    test_win = np.ndarray((5, 5))
     for x in range(test_win.shape[0]):
         # for y in range(test_win.shape[1]):
         #     test_win[x, y] = x * 100 + y

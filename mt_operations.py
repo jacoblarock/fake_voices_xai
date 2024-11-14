@@ -39,7 +39,7 @@ def file_func(func: Callable,
     for i in range(0, len(files) - batch_size, batch_size):
         batches.append(files[i:i+batch_size])
     batches.append(files[-(len(files) % batch_size):])
-    with mp.Pool(min(mp.cpu_count(), 16)) as pool:
+    with mp.Pool(min(mp.cpu_count(), 32)) as pool:
         batch_results = pool.map(partial(wrapper, func, args, kwargs), batches)
     out = pd.concat(batch_results, ignore_index=True)
     if cache:
