@@ -104,7 +104,9 @@ def merge(matched_labels: pd.DataFrame,
         del feature
         print("checkpoint")
         for i in matched_labels.index:
-            matched_labels.loc[i, "2"].apply(lambda row: np.concatenate((row["2"], row["2.temp"])))
+            a = matched_labels.loc[i, "2"]
+            b = matched_labels.loc[i, "2.temp"]
+            matched_labels.loc[i, "2"].apply(lambda x: np.concatenate((a, b)))
             matched_labels.loc[i, "2.temp"] = None
         # remaining = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="outer", rsuffix=".temp")
         # remaining = pd.concat([matched_labels, remaining]).drop_duplicates(["0", "1"])
