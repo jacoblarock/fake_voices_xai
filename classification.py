@@ -5,6 +5,7 @@ import os
 import pickle
 import feature_extraction
 import networks
+import data_container
 
 def get_labels(path: str,
                name_col: str,
@@ -100,22 +101,31 @@ def merge(matched_labels: pd.DataFrame,
             feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
         # perform join and filter
         matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
-        matched_labels.reset_index()
-        matched_labels["2"] = matched_labels["2"].astype(object)
+        matched_labels = matched_labels.reset_index(drop=True)
+        matched_labels = matched_labels.drop("1.temp", axis=1)
+        print(matched_labels)
         del feature
         print("checkpoint")
+        matched_labels["2"] = matched_labels["2"].apply(data_container.make_container)
         for i in range(len(matched_labels)):
-            a = matched_labels.loc[i, "2"]
+            a = matched_labels.loc[i, "2"].get_underlying()
             b = matched_labels.loc[i, "2.temp"]
-            matched_labels.loc[i, "2"] = np.concatenate((a, b))
-            matched_labels.loc[i, "2.temp"] = None
-            print(matched_labels.loc[i])
+            matched_labels.loc[i, "2"].data = np.concatenate((a, b))
+            if i % 1000 == 0:
+                print(i)
+        matched_labels["2"] = matched_labels["2"].apply(data_container.get_underlying)
+        #     row = matched_labels.loc[i]
+        #     temp = pd.Series({"2": 0})
+        #     print(row)
+        #     temp.apply(lambda x: np.concatenate((a, b)))
+        #     matched_labels.loc[i] = temp
+        #     print(matched_labels.loc[i])
         # remaining = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="outer", rsuffix=".temp")
         # remaining = pd.concat([matched_labels, remaining]).drop_duplicates(["0", "1"])
         # matched_labels = matched_labels[matched_labels["0"] == matched_labels["0.temp"]]
         # matched_labels = matched_labels.merge(feature, left_on=0, right_on=0, suffixes=("", ".temp"))
         # concat feature in 2 and feature in temp
-        # matched_labels["2"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
+        # matched_labels["2", "2.temp"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
         matched_labels = matched_labels.drop("2.temp", axis=1)
     else:
         raise Exception("Case for data types not yet implemented or incompatible")
