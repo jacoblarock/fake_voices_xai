@@ -101,12 +101,13 @@ def merge(matched_labels: pd.DataFrame,
         # perform join and filter
         matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
         matched_labels.reset_index()
+        matched_labels["2"] = matched_labels["2"].astype(object)
         del feature
         print("checkpoint")
-        for i in matched_labels.index:
+        for i in range(len(matched_labels)):
             a = matched_labels.loc[i, "2"]
             b = matched_labels.loc[i, "2.temp"]
-            matched_labels.loc[i, "2"].apply(lambda x: np.concatenate((a, b)))
+            matched_labels.loc[i, "2"] = np.concatenate((a, b))
             matched_labels.loc[i, "2.temp"] = None
             print(matched_labels.loc[i])
         # remaining = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="outer", rsuffix=".temp")
