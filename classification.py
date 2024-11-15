@@ -108,6 +108,7 @@ def merge(matched_labels: pd.DataFrame,
             b = matched_labels.loc[i, "2.temp"]
             matched_labels.loc[i, "2"].apply(lambda x: np.concatenate((a, b)))
             matched_labels.loc[i, "2.temp"] = None
+            print(matched_labels.loc[i])
         # remaining = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="outer", rsuffix=".temp")
         # remaining = pd.concat([matched_labels, remaining]).drop_duplicates(["0", "1"])
         # matched_labels = matched_labels[matched_labels["0"] == matched_labels["0.temp"]]
