@@ -100,12 +100,19 @@ def merge(matched_labels: pd.DataFrame,
             feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
         # perform join and filter
         matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
+        matched_labels.reset_index()
+        del feature
+        print("checkpoint")
+        for i in matched_labels.index:
+            temp = np.array([matched_labels.loc[i, "2"], matched_labels.loc[i, "2.temp"]])
+            matched_labels.loc[i, "2"] = temp
+            matched_labels.loc[i, "2.temp"] = None
         # remaining = matched_labels.join(feature.set_index([0, 1]), on=[0, 1], how="outer", rsuffix=".temp")
         # remaining = pd.concat([matched_labels, remaining]).drop_duplicates(["0", "1"])
         # matched_labels = matched_labels[matched_labels["0"] == matched_labels["0.temp"]]
         # matched_labels = matched_labels.merge(feature, left_on=0, right_on=0, suffixes=("", ".temp"))
         # concat feature in 2 and feature in temp
-        matched_labels["2"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
+        # matched_labels["2"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
         matched_labels = matched_labels.drop("2.temp", axis=1)
     else:
         raise Exception("Case for data types not yet implemented or incompatible")
