@@ -1,4 +1,5 @@
 from typing import Tuple, Union
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import os
@@ -93,6 +94,7 @@ def merge(matched_labels: pd.DataFrame,
      - feature: new feature to add to matched_labels
     WARNING: The input matched_labels dataframe WILL be modified due to memory reasons
     """
+    print("merge_start", str(datetime.now()))
     if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
         matched_labels = matched_labels.sort_values(by=[0, 1])
         feature = feature.sort_values(by=[0, 1])
@@ -111,12 +113,13 @@ def merge(matched_labels: pd.DataFrame,
         matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
         matched_labels = matched_labels.reset_index(drop=True)
         matched_labels = matched_labels.drop("1.temp", axis=1)
-        print(matched_labels)
+        print("join", str(datetime.now()))
         del feature
-        print("checkpoint")
         # matched_labels["2"] = matched_labels["2"].apply(data_container.make_container)
         matched_labels["2"] = mt_operations.apply(matched_labels["2"], data_container.make_container)
+        print("containers made", str(datetime.now()))
         matched_labels["2", "2.temp"] = mt_operations.apply(matched_labels["2", "2.temp"], feature_concat)
+        print("concatted", str(datetime.now()))
         # for i in range(len(matched_labels)):
         #     a = matched_labels.loc[i, "2"].get_underlying()
         #     b = matched_labels.loc[i, "2.temp"]
@@ -126,6 +129,7 @@ def merge(matched_labels: pd.DataFrame,
         #         print(i)
         # matched_labels["2"] = matched_labels["2"].apply(data_container.get_underlying)
         matched_labels["2"] = mt_operations.apply(matched_labels["2"], data_container.get_underlying)
+        print("unpack container", str(datetime.now()))
         #     row = matched_labels.loc[i]
         #     temp = pd.Series({"2": 0})
         #     print(row)
