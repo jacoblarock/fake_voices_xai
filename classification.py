@@ -81,20 +81,6 @@ def join_features(matched_labels: pd.DataFrame,
                   feature_name: str
                   ) -> pd.DataFrame:
     matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
-    if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
-        # matched_labels = matched_labels.sort_values(by=[0, 1])
-        # feature = feature.sort_values(by=[0, 1])
-        # morph sizes if number of dimensions is different
-        vsize_matched_labels = 1
-        if len(matched_labels[2][0].shape) > 1:
-            vsize_matched_labels = matched_labels[2][0].shape[1]
-        vsize_feature = 1
-        if len(feature[2][0].shape) > 1:
-            vsize_feature = feature[2][0].shape[1]
-        if vsize_matched_labels == 1 and vsize_feature != 1:
-            matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
-        if vsize_matched_labels != 1 and vsize_feature == 1:
-            feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
     matched_labels = matched_labels.reset_index(drop=True)
     matched_labels = matched_labels.drop("1.temp", axis=1)
     matched_labels = matched_labels.rename(columns={2: feature_name})

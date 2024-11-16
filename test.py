@@ -54,6 +54,7 @@ if __name__ == "__main__":
     matched_labels = classification.match_labels(labels, hnrs, "hnrs")
     print("matched labels")
     matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")
+    matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
     print("joined")
     print(matched_labels)
     print(matched_labels.shape)
