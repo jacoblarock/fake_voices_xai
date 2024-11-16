@@ -160,8 +160,9 @@ def merge(matched_labels: pd.DataFrame,
 def train(matched_labels: pd.DataFrame,
           feature_cols: list[str],
           model: networks.models.Sequential,
-          epochs: int
-          ):
+          epochs: int,
+          batch_size: int = 1000
+          ) -> list:
     """
     Trains an input model based on previously matched labels and features
     Arguments:
@@ -169,14 +170,20 @@ def train(matched_labels: pd.DataFrame,
      - model: model to train
      - epochs: number of epochs to train
     """
-    if len(feature_cols) == 1:
-        inputs = np.array(list(matched_labels[feature_cols[0]]))
-        matched_labels = matched_labels.drop(columns=[feature_cols[0]])
-    else:
-        inputs = []
-        for feature in feature_cols:
-            inputs = np.array(list(matched_labels[feature]), dtype=np.float16)
-            matched_labels = matched_labels.drop(columns=[feature])
-    labels = np.array(list(matched_labels["label"]))
-    history = model.fit(x=inputs, y=labels, epochs=epochs)
-    return history
+    inputs = None
+    batches = []
+    histories = []
+    for i in range(0, len(matched_labels) - batch_size, batch_size):
+        batches.append(matched_labels.index[i:i+batch_size])
+    if len(matched_labels.index) % batch_size != 0:
+        batches.append(list(matched_labels.index)[-(len(matched_labels.index) % batch_size):])
+    for batch in batches:
+        if len(feature_cols) == 1:
+            inputs = np.array(matched_labels.loc[batch, feature_cols[0]], dtype=np.float16)
+        else:
+            inputs = []
+            for feature in feature_cols:
+                inputs = np.array(matched_labels[batch, feature], dtype=np.float16)
+        labels = np.array(list(matched_labels.loc[batch, "label"]))
+        histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
+    return histories
