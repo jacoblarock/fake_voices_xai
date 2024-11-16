@@ -64,9 +64,9 @@ if __name__ == "__main__":
     print(matched_labels.shape)
 
     # create and train the model
-    hnr_model = networks.create_cnn_2d((30, 30), 32, 2, pooling=False)
-    mel_model = networks.create_cnn_2d((30, 30), 32, 2, pooling=False)
+    hnr_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=False)
+    mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=False)
     model = networks.stitch_and_terminate([hnr_model, mel_model])
     print(model.summary())
-    history = classification.train(matched_labels, ["hnrs", "mel_spec"], model, 3)
-    print(history)
+    histories = classification.train(matched_labels, ["hnrs", "mel_spec"], model, 3)
+    print(histories)

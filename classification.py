@@ -174,10 +174,11 @@ def train(matched_labels: pd.DataFrame,
     batches = []
     histories = []
     for i in range(0, len(matched_labels) - batch_size, batch_size):
-        batches.append(matched_labels.index[i:i+batch_size])
+        batches.append(list(matched_labels.index)[i:i+batch_size])
     if len(matched_labels.index) % batch_size != 0:
         batches.append(list(matched_labels.index)[-(len(matched_labels.index) % batch_size):])
     for batch in batches:
+        print(batch)
         if len(feature_cols) == 1:
             inputs = np.array(matched_labels.loc[batch, feature_cols[0]], dtype=np.float16)
         else:
