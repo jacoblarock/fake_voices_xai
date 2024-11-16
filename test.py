@@ -3,6 +3,7 @@ import classification
 import networks
 import mt_operations
 import matplotlib.pyplot as plt
+from datetime import datetime
 print("dependencies loaded")
 
 def plot_1d(data_arr):
@@ -30,7 +31,7 @@ if __name__ == "__main__":
                                            "window_height": 30},
                                    cache_name="hnrs"
                                    )
-    print("hnrs extracted")
+    print("hnrs extracted", datetime.now())
 
     # generate mel specs
     # mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
@@ -46,16 +47,19 @@ if __name__ == "__main__":
                                            "window_height": 30},
                                    cache_name="mel_spec"
                                    )
-    print("mel extracted")
+    print("mel extracted", datetime.now())
 
     # label and merge the features
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
-    print("labels")
+    print("labels", datetime.now())
     matched_labels = classification.match_labels(labels, hnrs, "hnrs")
-    print("matched labels")
+    del hnrs
+    print("matched labels", datetime.now())
     matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")
+    del mel_spec
+    print("joined", datetime.now())
     matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
-    print("joined")
+    print("morph", datetime.now())
     print(matched_labels)
     print(matched_labels.shape)
 
@@ -65,4 +69,4 @@ if __name__ == "__main__":
     model = networks.stitch_and_terminate([hnr_model, mel_model])
     print(model.summary())
     history = classification.train(matched_labels, ["hnrs", "mel_spec"], model, 3)
-    print(history.history)
+    print(history)
