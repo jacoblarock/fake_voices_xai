@@ -6,6 +6,7 @@ import pickle
 import feature_extraction
 import networks
 import data_container
+import mt_operations
 
 def get_labels(path: str,
                name_col: str,
@@ -74,6 +75,13 @@ def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
         out[i] = arr.copy()
     return out
 
+def feature_concat(row):
+    a = row["2"].get_underlying()
+    b = row["2.temp"]
+    row["2.temp"] = np.nan
+    row["2"].data = np.concatenate((a, b))
+    return row
+
 # TODO: Support for merging features with and without the sliding window
 def merge(matched_labels: pd.DataFrame,
           feature: pd.DataFrame
@@ -106,14 +114,18 @@ def merge(matched_labels: pd.DataFrame,
         print(matched_labels)
         del feature
         print("checkpoint")
-        matched_labels["2"] = matched_labels["2"].apply(data_container.make_container)
-        for i in range(len(matched_labels)):
-            a = matched_labels.loc[i, "2"].get_underlying()
-            b = matched_labels.loc[i, "2.temp"]
-            matched_labels.loc[i, "2"].data = np.concatenate((a, b))
-            if i % 1000 == 0:
-                print(i)
-        matched_labels["2"] = matched_labels["2"].apply(data_container.get_underlying)
+        # matched_labels["2"] = matched_labels["2"].apply(data_container.make_container)
+        matched_labels["2"] = mt_operations.apply(matched_labels["2"], data_container.make_container)
+        matched_labels["2", "2.temp"] = mt_operations.apply(matched_labels["2", "2.temp"], feature_concat)
+        # for i in range(len(matched_labels)):
+        #     a = matched_labels.loc[i, "2"].get_underlying()
+        #     b = matched_labels.loc[i, "2.temp"]
+        #     matched_labels.loc[i, "2.temp"] = np.nan
+        #     matched_labels.loc[i, "2"].data = np.concatenate((a, b))
+        #     if i % 1000 == 0:
+        #         print(i)
+        # matched_labels["2"] = matched_labels["2"].apply(data_container.get_underlying)
+        matched_labels["2"] = mt_operations.apply(matched_labels["2"], data_container.get_underlying)
         #     row = matched_labels.loc[i]
         #     temp = pd.Series({"2": 0})
         #     print(row)

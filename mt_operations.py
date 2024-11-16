@@ -6,12 +6,49 @@ import pandas as pd
 import numpy as np
 import os
 
-def apply(data: pd.DataFrame,
-          function: Callable,
-          chunk_size: int
+max_threads = 32
+
+def apply_wrapper(data: pd.DataFrame | pd.Series,
+                  function: Callable,
+                  indices: list
+                  ) -> pd.DataFrame | pd.Series:
+    # data.loc[indices] = data.loc[indices].apply(function)
+    if type(data) == pd.DataFrame:
+        out = pd.DataFrame(columns=data.columns)
+    else:
+        out = pd.Series()
+    for i in indices:
+        out.loc[i] = function(data.loc[i])
+    return out
+
+
+def apply(data: pd.DataFrame | pd.Series,
+          function: Callable
           ) -> pd.DataFrame:
-    ## THIS IS A PLACEHOLDER
-    return pd.DataFrame([])
+    indices = data.index
+    batches = []
+    batch_size = max(len(data) // min(mp.cpu_count(), max_threads), 1)
+    for i in range(0, len(indices) - batch_size, batch_size):
+        batches.append(list(indices)[i:i+batch_size])
+    if len(indices) % batch_size != 0:
+        batches.append(list(indices)[-(len(indices) % batch_size):])
+    # jobs = []
+    # for batch in batches:
+    #     jobs.append(mp.Process(target=apply_wrapper, args=(data, function, batch)))
+    #     jobs[-1].start()
+    # for job in jobs:
+    #     job.join()
+    with mp.Pool(min(mp.cpu_count(), max_threads)) as pool:
+        batch_results = pool.map(partial(apply_wrapper, data, function), batches)
+    print(batch_results)
+    out = pd.concat(batch_results, ignore_index=True)
+    print(out)
+    # with mp.Pool(min(mp.cpu_count(), max_threads)) as pool:
+    #     for batch in batches:
+    #         print(batch)
+    #         print()
+    #         pool.apply_async(apply_wrapper, (data, function, batch))
+    return out
 
 def wrapper(func, args, kwargs, batch):
     return func(*args, **kwargs, file_list=batch)
@@ -38,8 +75,9 @@ def file_func(func: Callable,
     batches = []
     for i in range(0, len(files) - batch_size, batch_size):
         batches.append(files[i:i+batch_size])
-    batches.append(files[-(len(files) % batch_size):])
-    with mp.Pool(min(mp.cpu_count(), 32)) as pool:
+    if len(files) % batch_size != 0:
+        batches.append(files[-(len(files) % batch_size):])
+    with mp.Pool(min(mp.cpu_count(), max_threads)) as pool:
         batch_results = pool.map(partial(wrapper, func, args, kwargs), batches)
     out = pd.concat(batch_results, ignore_index=True)
     if cache:
@@ -48,7 +86,12 @@ def file_func(func: Callable,
     return out
 
 if __name__ == "__main__":
-    def test_fun(file_list=[]):
-        return pd.DataFrame(file_list)
-    result = file_func(test_fun, "./datasets/release_in_the_wild/")
-    print(result)
+    def test_fun(row):
+        return row ** 2
+    # test = pd.DataFrame([[1, 2], [3, 4], [5, 6], [7, 8], [9, 0]])
+    size = 100000
+    test = pd.DataFrame({0: list(range(size)), 1: list(range(size))})
+    test = test % 21
+    print(test)
+    test[0] = apply(test[0], test_fun)
+    print(test)
