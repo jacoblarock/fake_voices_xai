@@ -24,7 +24,7 @@ def apply_wrapper(data: pd.DataFrame | pd.Series,
 
 def apply(data: pd.DataFrame | pd.Series,
           function: Callable
-          ) -> pd.DataFrame:
+          ) -> pd.DataFrame | pd.Series:
     indices = data.index
     batches = []
     batch_size = max(len(data) // min(mp.cpu_count(), max_threads), 1)

@@ -64,7 +64,7 @@ def match_labels(labels: pd.DataFrame,
         if cache:
             with open(cache_path, "wb") as file:
                 pickle.dump(extracted_features, file)
-    return extracted_features
+    return extracted_features.rename(columns={2: name})
 
 # meant for internal use
 # expand a one dimensional array into two dimensions
@@ -75,6 +75,30 @@ def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
     for i in range(vsize):
         out[i] = arr.copy()
     return out
+
+def join_features(matched_labels: pd.DataFrame,
+                  feature: pd.DataFrame,
+                  feature_name: str
+                  ) -> pd.DataFrame:
+    matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
+    if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
+        # matched_labels = matched_labels.sort_values(by=[0, 1])
+        # feature = feature.sort_values(by=[0, 1])
+        # morph sizes if number of dimensions is different
+        vsize_matched_labels = 1
+        if len(matched_labels[2][0].shape) > 1:
+            vsize_matched_labels = matched_labels[2][0].shape[1]
+        vsize_feature = 1
+        if len(feature[2][0].shape) > 1:
+            vsize_feature = feature[2][0].shape[1]
+        if vsize_matched_labels == 1 and vsize_feature != 1:
+            matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
+        if vsize_matched_labels != 1 and vsize_feature == 1:
+            feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
+    matched_labels = matched_labels.reset_index(drop=True)
+    matched_labels = matched_labels.drop("1.temp", axis=1)
+    matched_labels = matched_labels.rename(columns={2: feature_name})
+    return matched_labels
 
 def feature_concat(row):
     a = row["2"].get_underlying()
@@ -96,8 +120,8 @@ def merge(matched_labels: pd.DataFrame,
     """
     print("merge_start", str(datetime.now()))
     if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
-        matched_labels = matched_labels.sort_values(by=[0, 1])
-        feature = feature.sort_values(by=[0, 1])
+        # matched_labels = matched_labels.sort_values(by=[0, 1])
+        # feature = feature.sort_values(by=[0, 1])
         # morph sizes if number of dimensions is different
         vsize_matched_labels = 1
         if len(matched_labels[2][0].shape) > 1:
@@ -148,6 +172,7 @@ def merge(matched_labels: pd.DataFrame,
     return matched_labels
 
 def train(matched_labels: pd.DataFrame,
+          feature_cols: list[str],
           model: networks.models.Sequential,
           epochs: int
           ):
@@ -158,10 +183,14 @@ def train(matched_labels: pd.DataFrame,
      - model: model to train
      - epochs: number of epochs to train
     """
-    if 2 in matched_labels.columns:
-        x = np.array(list(matched_labels[2]))
+    if len(feature_cols) == 1:
+        inputs = np.array(list(matched_labels[feature_cols[0]]))
+        matched_labels = matched_labels.drop(columns=[feature_cols[0]])
     else:
-        x = np.array(list(matched_labels["2"]))
-    y = np.array(list(matched_labels["label"]))
-    history = model.fit(x=x, y=y, epochs=epochs)
+        inputs = []
+        for feature in feature_cols:
+            inputs = np.array(list(matched_labels[feature]), dtype=np.float16)
+            matched_labels = matched_labels.drop(columns=[feature])
+    labels = np.array(list(matched_labels["label"]))
+    history = model.fit(x=inputs, y=labels, epochs=epochs)
     return history
