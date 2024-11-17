@@ -32,6 +32,7 @@ if __name__ == "__main__":
                                    cache_name="hnrs"
                                    )
     print("hnrs extracted", datetime.now())
+    print(hnrs)
 
     # generate mel specs
     # mel_spec = feature_extraction.bulk_extract("./datasets/release_in_the_wild", "wav", feature_extraction.gen_mel_spec, [])
@@ -48,11 +49,13 @@ if __name__ == "__main__":
                                    cache_name="mel_spec"
                                    )
     print("mel extracted", datetime.now())
+    print(mel_spec)
 
     # label and merge the features
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
     print("labels", datetime.now())
     matched_labels = classification.match_labels(labels, hnrs, "hnrs")
+    print(matched_labels)
     del hnrs
     print("matched labels", datetime.now())
     matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")

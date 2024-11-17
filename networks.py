@@ -7,7 +7,7 @@ def create_cnn_2d(input_shape: Tuple[int, int],
                   n_filters: int,
                   n_layers: int,
                   pooling: bool = True,
-                  output_size: int = 1
+                  output_size: int = -1
                   ) -> models.Sequential:
     """
     creates a 2D cnn with:
@@ -23,7 +23,8 @@ def create_cnn_2d(input_shape: Tuple[int, int],
             model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(n_filters, (3, 3), activation="relu"))
     model.add(layers.Flatten())
-    model.add(layers.Dense(output_size))
+    if output_size > 0:
+        model.add(layers.Dense(output_size))
     model.compile(optimizer="adam",
                   loss=losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=["accuracy"])
@@ -33,7 +34,7 @@ def create_cnn_1d(input_shape: int,
                   n_filters: int,
                   n_layers: int,
                   pooling: bool = True,
-                  output_size: int = 1
+                  output_size: int = -1
                   ) -> models.Sequential:
     """
     creates a 1D cnn with:
@@ -49,7 +50,8 @@ def create_cnn_1d(input_shape: int,
             model.add(layers.MaxPooling1D(2))
         model.add(layers.Conv1D(n_filters, 3, activation="relu"))
     model.add(layers.Flatten())
-    model.add(layers.Dense(output_size))
+    if output_size > 0:
+        model.add(layers.Dense(output_size))
     model.compile(optimizer="adam",
                   loss=losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=["accuracy"])
@@ -59,7 +61,7 @@ def stitch_and_terminate(model_list: list[models.Sequential],
                          ) -> models.Model:
     outputs = []
     for m in model_list:
-        outputs.append(m.layers[-1].input)
+        outputs.append(m.layers[-1].output)
     inputs = []
     for m in model_list:
         inputs.append(m.inputs)
