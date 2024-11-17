@@ -81,7 +81,10 @@ def join_features(matched_labels: pd.DataFrame,
                   feature: pd.DataFrame,
                   feature_name: str
                   ) -> pd.DataFrame:
-    matched_labels = matched_labels.join(feature.set_index(["sample", "x"]), on=["sample", "x"], how="inner", rsuffix=".temp")
+    if matched_labels["x"][0] == -1 or feature["x"][0] == -1:
+        matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="inner", rsuffix=".temp")
+    else:
+        matched_labels = matched_labels.join(feature.set_index(["sample", "x"]), on=["sample", "x"], how="inner", rsuffix=".temp")
     matched_labels = matched_labels.reset_index(drop=True)
     matched_labels = matched_labels.drop("y.temp", axis=1)
     matched_labels = matched_labels.rename(columns={"feature": feature_name})

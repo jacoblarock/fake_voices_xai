@@ -95,7 +95,7 @@ def bulk_extract(directory: str,
                         state = window.smart_hop(0.5)
                         out.append((file, window.x, window.y, window.get_window()))
                 else:
-                    out.append((file, 0, extracted_feature))
+                    out.append((file, -1, -1, extracted_feature))
             if summarize:
                 out.append((file, 0, get_summary_stats(feature(samples, sample_rate, *args))))
         if cache:
