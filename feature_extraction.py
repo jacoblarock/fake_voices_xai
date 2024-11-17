@@ -89,13 +89,11 @@ def bulk_extract(directory: str,
                 extracted_feature = feature(samples, sample_rate, *args)
                 if type(extracted_feature) == np.ndarray:
                     window = sliding_window.window(extracted_feature, window_length, window_height)
-                    i = 0
                     state = 1
-                    out.append((file, i, window.get_window()))
+                    out.append((file, window.x, window.y, window.get_window()))
                     while state == 1:
-                        i += 1
                         state = window.smart_hop(0.5)
-                        out.append((file, i, window.get_window()))
+                        out.append((file, window.x, window.y, window.get_window()))
                 else:
                     out.append((file, 0, extracted_feature))
             if summarize:
@@ -103,7 +101,12 @@ def bulk_extract(directory: str,
         if cache:
             with open(cache_path, "wb") as file:
                 pickle.dump(pd.DataFrame(out), file)
-    return pd.DataFrame(out)
+    out = pd.DataFrame(out)
+    out = out.rename(columns={0: "sample",
+                              1: "x",
+                              2: "y",
+                              3: "feature"})
+    return out
 
 # Summarize the results of a calculation resulting in an array into quartiles
 # How does this affect classification?

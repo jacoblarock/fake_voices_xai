@@ -59,12 +59,12 @@ def match_labels(labels: pd.DataFrame,
         for i in labels.index:
             name = labels.loc[i, "name"]
             label = labels.loc[i, "label"]
-            to_label = extracted_features[0] == name
+            to_label = extracted_features["sample"] == name
             extracted_features.loc[to_label, "label"] = label
         if cache:
             with open(cache_path, "wb") as file:
                 pickle.dump(extracted_features, file)
-    return extracted_features.rename(columns={2: name})
+    return extracted_features.rename(columns={"feature": name})
 
 # meant for internal use
 # expand a one dimensional array into two dimensions
@@ -80,17 +80,17 @@ def join_features(matched_labels: pd.DataFrame,
                   feature: pd.DataFrame,
                   feature_name: str
                   ) -> pd.DataFrame:
-    matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
+    matched_labels = matched_labels.join(feature.set_index(["sample", "x"]), on=["sample", "x"], how="inner", rsuffix=".temp")
     matched_labels = matched_labels.reset_index(drop=True)
-    matched_labels = matched_labels.drop("1.temp", axis=1)
-    matched_labels = matched_labels.rename(columns={2: feature_name})
+    matched_labels = matched_labels.drop("y.temp", axis=1)
+    matched_labels = matched_labels.rename(columns={"feature": feature_name})
     return matched_labels
 
 def feature_concat(row):
-    a = row["2"].get_underlying()
-    b = row["2.temp"]
-    row["2.temp"] = np.nan
-    row["2"].data = np.concatenate((a, b))
+    a = row["feature"].get_underlying()
+    b = row["feature.temp"]
+    row["feature.temp"] = np.nan
+    row["feature"].data = np.concatenate((a, b))
     return row
 
 # TODO: Support for merging features with and without the sliding window
@@ -105,30 +105,30 @@ def merge(matched_labels: pd.DataFrame,
     WARNING: The input matched_labels dataframe WILL be modified due to memory reasons
     """
     print("merge_start", str(datetime.now()))
-    if type(matched_labels[2][0]) == np.ndarray and type(feature[2][0]) == np.ndarray:
+    if type(matched_labels["feature"][0]) == np.ndarray and type(feature["feature"][0]) == np.ndarray:
         # matched_labels = matched_labels.sort_values(by=[0, 1])
         # feature = feature.sort_values(by=[0, 1])
         # morph sizes if number of dimensions is different
         vsize_matched_labels = 1
-        if len(matched_labels[2][0].shape) > 1:
-            vsize_matched_labels = matched_labels[2][0].shape[1]
+        if len(matched_labels["feature"][0].shape) > 1:
+            vsize_matched_labels = matched_labels["feature"][0].shape[1]
         vsize_feature = 1
-        if len(feature[2][0].shape) > 1:
-            vsize_feature = feature[2][0].shape[1]
+        if len(feature["feature"][0].shape) > 1:
+            vsize_feature = feature["feature"][0].shape[1]
         if vsize_matched_labels == 1 and vsize_feature != 1:
-            matched_labels[2] = matched_labels[2].apply(morph, args=(vsize_feature,))
+            matched_labels["feature"] = matched_labels["feature"].apply(morph, args=(vsize_feature,))
         if vsize_matched_labels != 1 and vsize_feature == 1:
-            feature[2] = feature[2].apply(morph, args=(vsize_matched_labels,))
+            feature["feature"] = feature["feature"].apply(morph, args=(vsize_matched_labels,))
         # perform join and filter
-        matched_labels = matched_labels.join(feature.set_index([0]), on=[0], how="inner", rsuffix=".temp")
+        matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="inner", rsuffix=".temp")
         matched_labels = matched_labels.reset_index(drop=True)
-        matched_labels = matched_labels.drop("1.temp", axis=1)
+        matched_labels = matched_labels.drop("y.temp", axis=1)
         print("join", str(datetime.now()))
         del feature
         # matched_labels["2"] = matched_labels["2"].apply(data_container.make_container)
-        matched_labels["2"] = mt_operations.apply(matched_labels["2"], data_container.make_container)
+        matched_labels["feature"] = mt_operations.apply(matched_labels["feature"], data_container.make_container)
         print("containers made", str(datetime.now()))
-        matched_labels["2", "2.temp"] = mt_operations.apply(matched_labels["2", "2.temp"], feature_concat)
+        matched_labels["feature", "feature.temp"] = mt_operations.apply(matched_labels["feature", "feature.temp"], feature_concat)
         print("concatted", str(datetime.now()))
         # for i in range(len(matched_labels)):
         #     a = matched_labels.loc[i, "2"].get_underlying()
@@ -138,7 +138,7 @@ def merge(matched_labels: pd.DataFrame,
         #     if i % 1000 == 0:
         #         print(i)
         # matched_labels["2"] = matched_labels["2"].apply(data_container.get_underlying)
-        matched_labels["2"] = mt_operations.apply(matched_labels["2"], data_container.get_underlying)
+        matched_labels["feature"] = mt_operations.apply(matched_labels["feature"], data_container.get_underlying)
         print("unpack container", str(datetime.now()))
         #     row = matched_labels.loc[i]
         #     temp = pd.Series({"2": 0})
@@ -152,7 +152,7 @@ def merge(matched_labels: pd.DataFrame,
         # matched_labels = matched_labels.merge(feature, left_on=0, right_on=0, suffixes=("", ".temp"))
         # concat feature in 2 and feature in temp
         # matched_labels["2", "2.temp"] = matched_labels[["2", "2.temp"]].apply(lambda row: np.concatenate((row["2"], row["2.temp"])), axis=1)
-        matched_labels = matched_labels.drop("2.temp", axis=1)
+        matched_labels = matched_labels.drop("feature.temp", axis=1)
     else:
         raise Exception("Case for data types not yet implemented or incompatible")
     return matched_labels
@@ -173,10 +173,13 @@ def train(matched_labels: pd.DataFrame,
     inputs = None
     batches = []
     histories = []
+    print("creating batches", datetime.now())
     for i in range(0, len(matched_labels) - batch_size, batch_size):
-        batches.append(list(matched_labels.index)[i:i+batch_size])
+        batches.append(matched_labels.index[i:i+batch_size])
     if len(matched_labels.index) % batch_size != 0:
-        batches.append(list(matched_labels.index)[-(len(matched_labels.index) % batch_size):])
+        batches.append(matched_labels.index[-(len(matched_labels.index) % batch_size):])
+    print("created batches", datetime.now())
+    print("begin batch training", datetime.now())
     for batch in batches:
         print(batch)
         if len(feature_cols) == 1:
