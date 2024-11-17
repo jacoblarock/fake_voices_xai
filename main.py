@@ -4,6 +4,7 @@ import networks
 import mt_operations
 import matplotlib.pyplot as plt
 from datetime import datetime
+from keras._tf_keras.keras import utils
 print("dependencies loaded")
 
 def plot_1d(data_arr):
@@ -88,5 +89,6 @@ if __name__ == "__main__":
     mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30)
     model = networks.stitch_and_terminate([hnr_model, mel_model, mfcc_model])
     print(model.summary())
+    utils.plot_model(model, "model_plot.png", show_shapes=True)
     histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs"], model, 3, batch_size=100000)
     print(histories)
