@@ -58,13 +58,13 @@ if __name__ == "__main__":
     matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")
     del mel_spec
     print("joined", datetime.now())
-    matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
-    print("morph", datetime.now())
+    # matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
+    # print("morph", datetime.now())
     print(matched_labels)
     print(matched_labels.shape)
 
     # create and train the model
-    hnr_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=False)
+    hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False)
     mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=False)
     model = networks.stitch_and_terminate([hnr_model, mel_model])
     print(model.summary())

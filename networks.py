@@ -3,7 +3,12 @@ import tensorflow as tf
 from keras._tf_keras.keras import models, layers, losses
 from typing import Tuple
 
-def create_cnn_2d(input_shape: Tuple[int, int], n_filters: int, n_layers: int, pooling=True) -> models.Sequential:
+def create_cnn_2d(input_shape: Tuple[int, int],
+                  n_filters: int,
+                  n_layers: int,
+                  pooling: bool = True,
+                  output_size: int = 1
+                  ) -> models.Sequential:
     """
     creates a 2D cnn with:
      - n_layers convolutional layers separated by max pooling layers
@@ -17,12 +22,19 @@ def create_cnn_2d(input_shape: Tuple[int, int], n_filters: int, n_layers: int, p
         if pooling:
             model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(n_filters, (3, 3), activation="relu"))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(output_size))
     model.compile(optimizer="adam",
                   loss=losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=["accuracy"])
     return model
 
-def create_cnn_1d(input_shape: int, n_filters: int, n_layers: int, pooling=True) -> models.Sequential:
+def create_cnn_1d(input_shape: int,
+                  n_filters: int,
+                  n_layers: int,
+                  pooling: bool = True,
+                  output_size: int = 1
+                  ) -> models.Sequential:
     """
     creates a 1D cnn with:
      - n_layers convolutional layers separated by max pooling layers
@@ -36,6 +48,8 @@ def create_cnn_1d(input_shape: int, n_filters: int, n_layers: int, pooling=True)
         if pooling:
             model.add(layers.MaxPooling1D(2))
         model.add(layers.Conv1D(n_filters, 3, activation="relu"))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(output_size))
     model.compile(optimizer="adam",
                   loss=losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=["accuracy"])
