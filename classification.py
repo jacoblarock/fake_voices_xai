@@ -82,10 +82,18 @@ def join_features(matched_labels: pd.DataFrame,
                   feature_name: str
                   ) -> pd.DataFrame:
     if matched_labels["x"][0] == -1 or feature["x"][0] == -1:
-        matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="inner", rsuffix=".temp")
+        matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="left", rsuffix=".temp")
     else:
-        matched_labels = matched_labels.join(feature.set_index(["sample", "x"]), on=["sample", "x"], how="inner", rsuffix=".temp")
+        matched_labels = matched_labels.join(feature.set_index(["sample", "x"]), on=["sample", "x"], how="left", rsuffix=".temp")
     matched_labels = matched_labels.reset_index(drop=True)
+    for column in matched_labels.columns:
+        if column[-5:] != ".temp" and column not in ("sample", "label"):
+            column_type = type(matched_labels.loc[0, column])
+            if column_type == np.ndarray or column_type == pd.Series:
+                sample_shape = matched_labels.loc[0, column].shape
+                matched_labels[column] = matched_labels[column].apply(lambda x: x if x is not np.nan else np.ndarray(sample_shape))
+            else:
+                matched_labels[column] = matched_labels[column].apply(lambda x: x if x is not np.nan else 0)
     matched_labels = matched_labels.drop("y.temp", axis=1)
     matched_labels = matched_labels.rename(columns={"feature": feature_name})
     return matched_labels
@@ -185,15 +193,19 @@ def train(matched_labels: pd.DataFrame,
         batches.append(indices[-(len(indices) % batch_size):])
     print("created batches", datetime.now())
     print("begin batch training", datetime.now())
+    float_min = np.finfo(np.float64).min
+    float_max = np.finfo(np.float64).max
     for batch in batches:
         if len(feature_cols) == 1:
-            temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
+            temp = matched_labels.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
+            # temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
             temp = list(temp)
             inputs = tf.convert_to_tensor(temp)
         else:
             inputs = []
             for feature in feature_cols:
-                temp = matched_labels.loc[batch, feature].apply(list)
+                temp = matched_labels.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
+                # temp = matched_labels.loc[batch, feature].apply(list)
                 temp = list(temp)
                 inputs.append(tf.convert_to_tensor(temp))
         labels = tf.convert_to_tensor(matched_labels.loc[batch, "label"].apply(int))
