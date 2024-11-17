@@ -174,10 +174,11 @@ def train(matched_labels: pd.DataFrame,
     batches = []
     histories = []
     print("creating batches", datetime.now())
+    indices = list(matched_labels.index)
     for i in range(0, len(matched_labels) - batch_size, batch_size):
-        batches.append(matched_labels.index[i:i+batch_size])
-    if len(matched_labels.index) % batch_size != 0:
-        batches.append(matched_labels.index[-(len(matched_labels.index) % batch_size):])
+        batches.append(indices[i:i+batch_size])
+    if len(indices) % batch_size != 0:
+        batches.append(indices[-(len(indices) % batch_size):])
     print("created batches", datetime.now())
     print("begin batch training", datetime.now())
     for batch in batches:
