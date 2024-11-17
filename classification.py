@@ -1,5 +1,6 @@
 from typing import Tuple, Union
 from datetime import datetime
+import tensorflow as tf
 import numpy as np
 import pandas as pd
 import os
@@ -161,7 +162,7 @@ def train(matched_labels: pd.DataFrame,
           feature_cols: list[str],
           model: networks.models.Sequential,
           epochs: int,
-          batch_size: int = 1000
+          batch_size: int = 100000
           ) -> list:
     """
     Trains an input model based on previously matched labels and features
@@ -182,13 +183,16 @@ def train(matched_labels: pd.DataFrame,
     print("created batches", datetime.now())
     print("begin batch training", datetime.now())
     for batch in batches:
-        print(batch)
         if len(feature_cols) == 1:
-            inputs = np.array(matched_labels.loc[batch, feature_cols[0]], dtype=np.float16)
+            temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
+            temp = list(temp)
+            inputs = tf.convert_to_tensor(temp)
         else:
             inputs = []
             for feature in feature_cols:
-                inputs = np.array(matched_labels[batch, feature], dtype=np.float16)
-        labels = np.array(list(matched_labels.loc[batch, "label"]))
+                temp = matched_labels.loc[batch, feature].apply(list)
+                temp = list(temp)
+                inputs.append(tf.convert_to_tensor(temp))
+        labels = tf.convert_to_tensor(matched_labels.loc[batch, "label"].apply(int))
         histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
     return histories
