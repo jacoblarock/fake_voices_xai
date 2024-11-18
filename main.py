@@ -25,6 +25,10 @@ if __name__ == "__main__":
             "window_length": 30,
             "window_height": 30}
 
+    # get labels
+    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
+    print("labels", datetime.now())
+
     # generate hnrs
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -36,6 +40,13 @@ if __name__ == "__main__":
                                    cache_name="hnrs"
                                    )
     print("hnrs extracted", datetime.now())
+    print("shape", hnrs.shape)
+    print("max x:", max(hnrs["x"]))
+
+    # match labels to the feature
+    matched_labels = classification.match_labels(labels, hnrs, "hnrs")
+    del hnrs
+    print("matched labels", datetime.now())
 
     # generate mel specs
     mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
@@ -48,6 +59,12 @@ if __name__ == "__main__":
                                    cache_name="mel_spec"
                                    )
     print("mel extracted", datetime.now())
+    print("shape", mel_spec.shape)
+    print("max x:", max(mel_spec["x"]))
+
+    # merge features
+    matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")
+    del mel_spec
 
     # generate mfccs
     mfccs = mt_operations.file_func(feature_extraction.bulk_extract,
@@ -60,6 +77,12 @@ if __name__ == "__main__":
                                    cache_name="mfccs"
                                    )
     print("mfccs extracted", datetime.now())
+    print("shape", mfccs.shape)
+    print("max x:", max(mfccs["x"]))
+
+    # merge features
+    matched_labels = classification.join_features(matched_labels, mfccs, "mfccs")
+    del mfccs
 
     # generate hnrs
     f0_lens = mt_operations.file_func(feature_extraction.bulk_extract,
@@ -72,17 +95,10 @@ if __name__ == "__main__":
                                    cache_name="f0_lens"
                                    )
     print("f0_lens extracted", datetime.now())
+    print("shape", f0_lens.shape)
+    print("max x:", max(f0_lens["x"]))
 
-    # label and merge the features
-    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
-    print("labels", datetime.now())
-    matched_labels = classification.match_labels(labels, hnrs, "hnrs")
-    del hnrs
-    print("matched labels", datetime.now())
-    matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")
-    del mel_spec
-    matched_labels = classification.join_features(matched_labels, mfccs, "mfccs")
-    del mfccs
+    # merge features
     matched_labels = classification.join_features(matched_labels, f0_lens, "f0_lens")
     del f0_lens
     print("joined", datetime.now())
