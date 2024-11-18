@@ -65,6 +65,7 @@ if __name__ == "__main__":
     # merge features
     matched_labels = classification.join_features(matched_labels, mel_spec, "mel_spec")
     del mel_spec
+    print("merged shape", matched_labels.shape)
 
     # generate mfccs
     mfccs = mt_operations.file_func(feature_extraction.bulk_extract,
@@ -83,6 +84,7 @@ if __name__ == "__main__":
     # merge features
     matched_labels = classification.join_features(matched_labels, mfccs, "mfccs")
     del mfccs
+    print("merged shape", matched_labels.shape)
 
     # generate hnrs
     f0_lens = mt_operations.file_func(feature_extraction.bulk_extract,
@@ -101,6 +103,7 @@ if __name__ == "__main__":
     # merge features
     matched_labels = classification.join_features(matched_labels, f0_lens, "f0_lens")
     del f0_lens
+    print("merged shape", matched_labels.shape)
     print("joined", datetime.now())
     # matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
     # print("morph", datetime.now())
@@ -116,6 +119,6 @@ if __name__ == "__main__":
         utils.plot_model(model, "model_plot.png", show_shapes=True)
     except:
         print("model plot not possible")
-    histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs", "f0_lens"], model, 3, batch_size=100000)
+    histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs", "f0_lens"], model, 3, batch_size=10000)
     for history in histories:
         print(history)

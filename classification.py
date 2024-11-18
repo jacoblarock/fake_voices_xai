@@ -84,7 +84,7 @@ def join_features(matched_labels: pd.DataFrame,
     if matched_labels["x"][0] == -1 or feature["x"][0] == -1:
         matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="left", rsuffix=".temp")
     else:
-        matched_labels = matched_labels.join(feature.set_index(["sample", "x"]), on=["sample", "x"], how="left", rsuffix=".temp")
+        matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="left", rsuffix=".temp")
     matched_labels = matched_labels.reset_index(drop=True)
     for column in matched_labels.columns:
         if column[-5:] != ".temp" and column not in ("sample", "label"):
