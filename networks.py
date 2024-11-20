@@ -26,7 +26,7 @@ def create_cnn_2d(input_shape: Tuple[int, int],
     if output_size > 0:
         model.add(layers.Dense(output_size))
     model.compile(optimizer="adam",
-                  loss=losses.SparseCategoricalCrossentropy(from_logits=True),
+                  loss="mean_squared_error",
                   metrics=["accuracy"])
     return model
 
@@ -53,7 +53,7 @@ def create_cnn_1d(input_shape: int,
     if output_size > 0:
         model.add(layers.Dense(output_size))
     model.compile(optimizer="adam",
-                  loss=losses.SparseCategoricalCrossentropy(from_logits=True),
+                  loss="mean_squared_error",
                   metrics=["accuracy"])
     return model
 
@@ -70,7 +70,7 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     stitch = layers.Dense(1)(stitch)
     model = models.Model(inputs=inputs, outputs=stitch)
     model.compile(optimizer="adam",
-                  loss=losses.SparseCategoricalCrossentropy(from_logits=True),
+                  loss="mean_squared_error",
                   metrics=["accuracy"])
     return model
 
