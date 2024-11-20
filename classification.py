@@ -173,7 +173,9 @@ def train(matched_labels: pd.DataFrame,
           feature_cols: list[str],
           model: networks.models.Sequential,
           epochs: int,
-          batch_size: int = 100000
+          batch_method: str = "lines",
+          batch_size: int = 100000,
+          features: list[pd.DataFrame] = []
           ) -> list:
     """
     Trains an input model based on previously matched labels and features
@@ -185,29 +187,58 @@ def train(matched_labels: pd.DataFrame,
     inputs = None
     batches = []
     histories = []
-    print("creating batches", datetime.now())
-    indices = list(matched_labels.index)
-    for i in range(0, len(matched_labels) - batch_size, batch_size):
-        batches.append(indices[i:i+batch_size])
-    if len(indices) % batch_size != 0:
-        batches.append(indices[-(len(indices) % batch_size):])
-    print("created batches", datetime.now())
-    print("begin batch training", datetime.now())
     float_min = np.finfo(np.float64).min
     float_max = np.finfo(np.float64).max
-    for batch in batches:
-        if len(feature_cols) == 1:
-            temp = matched_labels.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
-            # temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
-            temp = list(temp)
-            inputs = tf.convert_to_tensor(temp)
-        else:
-            inputs = []
-            for feature in feature_cols:
-                temp = matched_labels.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
-                # temp = matched_labels.loc[batch, feature].apply(list)
+    if batch_method == "lines":
+        print("creating batches", datetime.now())
+        indices = list(matched_labels.index)
+        for i in range(0, len(matched_labels) - batch_size, batch_size):
+            batches.append(indices[i:i+batch_size])
+        if len(indices) % batch_size != 0:
+            batches.append(indices[-(len(indices) % batch_size):])
+        print("created batches", datetime.now())
+        print("begin batch training", datetime.now())
+        for batch in batches:
+            if len(feature_cols) == 1:
+                temp = matched_labels.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
+                # temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
                 temp = list(temp)
-                inputs.append(tf.convert_to_tensor(temp))
-        labels = tf.convert_to_tensor(matched_labels.loc[batch, "label"].apply(int))
-        histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
+                inputs = tf.convert_to_tensor(temp)
+            else:
+                inputs = []
+                for feature in feature_cols:
+                    temp = matched_labels.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
+                    # temp = matched_labels.loc[batch, feature].apply(list)
+                    temp = list(temp)
+                    inputs.append(tf.convert_to_tensor(temp))
+            labels = tf.convert_to_tensor(matched_labels.loc[batch, "label"].apply(int))
+            histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
+    if batch_method == "samples":
+        if "name" not in matched_labels.columns:
+            raise Exception("please use an unmerged labels dataframe")
+        samples = list(matched_labels["name"].drop_duplicates())
+        print("\nbegin batch training", datetime.now())
+        for sample in samples:
+            print("\ntrain: ", sample, datetime.now())
+            label = matched_labels.loc[matched_labels["name"] == sample, "label"]
+            print("\nlabel: ", label, datetime.now())
+            joined = pd.DataFrame({"sample": []})
+            joined.loc[0, "sample"] = sample
+            for i in range(len(features)):
+                joined = joined.join(features[i].set_index(["sample"]), on=["sample"], how="inner")
+                joined = joined.rename(columns={"feature": feature_cols[i]})
+                joined = joined.drop(columns=["x", "y"])
+            if len(feature_cols) == 1:
+                temp = joined[feature_cols[0]].apply(np.clip, args=(float_min, float_max))
+                temp = list(temp)
+                inputs = tf.convert_to_tensor(temp)
+            else:
+                inputs = []
+                for feature in feature_cols:
+                    temp = joined[feature].apply(np.clip, args=(float_min, float_max))
+                    temp = list(temp)
+                    inputs.append(tf.convert_to_tensor(temp))
+            labels = tf.convert_to_tensor([label for i in range(len(joined))])
+            print("\nlen: ", len(labels), datetime.now())
+            histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
     return histories

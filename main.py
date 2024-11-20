@@ -3,6 +3,8 @@ import classification
 import networks
 import mt_operations
 import matplotlib.pyplot as plt
+from typing import Tuple
+import pandas as pd
 from datetime import datetime
 from keras._tf_keras.keras import utils
 print("dependencies loaded")
@@ -10,25 +12,14 @@ print("dependencies loaded")
 def plot_1d(data_arr):
     plt.plot(data_arr)
     plt.show()
+    return
 
 def plot_2d(data_arr):
     plt.imshow(data_arr, interpolation="nearest")
     plt.show()
+    return
 
-if __name__ == "__main__":
-    feature_extraction.check_cache()
-
-    dataset_dir = "./datasets/release_in_the_wild"
-    dataset_ext = "wav"
-    extraction_kwargs={"cache": False,
-            "use_cached": False,
-            "window_length": 30,
-            "window_height": 30}
-
-    # get labels
-    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
-    print("labels", datetime.now())
-
+def extract_progressive_merging():
     # generate hnrs
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -108,6 +99,83 @@ if __name__ == "__main__":
     # matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
     # print("morph", datetime.now())
 
+    return matched_labels
+
+def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
+    hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_hnrs,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="hnrs"
+                                   )
+    print("hnrs extracted", datetime.now())
+    print("shape", hnrs.shape)
+    print("max x:", max(hnrs["x"]))
+
+    mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.gen_mel_spec,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="mel_spec"
+                                   )
+    print("mel extracted", datetime.now())
+    print("shape", mel_spec.shape)
+    print("max x:", max(mel_spec["x"]))
+
+    mfccs = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.gen_mfcc,
+                                         [30]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="mfccs"
+                                   )
+    print("mfccs extracted", datetime.now())
+    print("shape", mfccs.shape)
+    print("max x:", max(mfccs["x"]))
+
+    f0_lens = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_f0_lens,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="f0_lens"
+                                   )
+    print("f0_lens extracted", datetime.now())
+    print("shape", f0_lens.shape)
+    print("max x:", max(f0_lens["x"]))
+
+    return (["hnrs", "mel_spec", "mfccs", "f0_lens"], [hnrs, mel_spec, mfccs, f0_lens])
+
+if __name__ == "__main__":
+    feature_extraction.check_cache()
+
+    dataset_dir = "./datasets/release_in_the_wild"
+    dataset_ext = "wav"
+    extraction_kwargs={"cache": False,
+            "use_cached": False,
+            "window_length": 30,
+            "window_height": 30}
+
+    # get labels
+    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
+    print("labels", datetime.now())
+
+    # create one large dataframe with all features labelled for training
+    # training batches made from a set number of lines
+    # matched_labels = extract_progressive_merging()
+
+    feature_names, features = extract_separate()
+
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
     mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30)
@@ -119,6 +187,7 @@ if __name__ == "__main__":
         utils.plot_model(model, "model_plot.png", show_shapes=True)
     except:
         print("model plot not possible")
-    histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs", "f0_lens"], model, 3, batch_size=10000)
+    # histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs", "f0_lens"], model, 3, batch_size=3)
+    histories = classification.train(labels, feature_names, model, 3, batch_size=3, features=features, batch_method="samples")
     for history in histories:
         print(history)
