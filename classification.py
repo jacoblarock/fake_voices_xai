@@ -231,6 +231,7 @@ def train(matched_labels: pd.DataFrame,
             joined.loc[0, "sample"] = sample
             for i in range(len(features)):
                 joined = joined.join(features[i].set_index(["sample"]), on=["sample"], how="inner")
+                joined["feature"] = joined["feature"].apply(np.clip, args=(float_min, float_max))
                 joined = joined.rename(columns={"feature": feature_cols[i]})
                 joined = joined.drop(columns=["x", "y"])
             joined = joined.reset_index(drop=True)
@@ -244,10 +245,9 @@ def train(matched_labels: pd.DataFrame,
                 else:
                     inputs = []
                     for feature in feature_cols:
-                        temp = joined.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
-                        print("clipped")
+                        temp = joined.loc[batch, feature]
                         temp = list(temp)
-                        print("listed")
+                        print("start conversion to tensor")
                         inputs.append(tf.convert_to_tensor(temp))
                         print("converted to tensor")
                 labels = tf.convert_to_tensor([label for i in range(len(batch))])
