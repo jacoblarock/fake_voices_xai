@@ -184,7 +184,8 @@ def train(matched_labels: pd.DataFrame,
           epochs: int,
           batch_method: str = "lines",
           batch_size: int = 100000,
-          features: list[pd.DataFrame] = []
+          features: list[pd.DataFrame] = [],
+          save_as: str | None = None
           ) -> list:
     """
     Trains an input model based on previously matched labels and features
@@ -221,7 +222,11 @@ def train(matched_labels: pd.DataFrame,
     if batch_method == "samples":
         if "name" not in matched_labels.columns:
             raise Exception("please use an unmerged labels dataframe")
-        samples = list(matched_labels["name"].drop_duplicates())
+        progress = 0
+        if save_as is not None and os.path.exists("./models/" + save_as + "_progress"):
+            with open("./models/" + save_as + "_progress", "rb") as file:
+                progress = pickle.load(file)
+        samples = list(matched_labels["name"].drop_duplicates())[progress:]
         print("\nbegin batch training", datetime.now())
         for sample in samples:
             print("\ntrain: ", sample, datetime.now())
@@ -240,16 +245,24 @@ def train(matched_labels: pd.DataFrame,
             for batch in batches:
                 if len(feature_cols) == 1:
                     temp = joined.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
-                    temp = list(temp)
-                    inputs = tf.convert_to_tensor(temp)
+                    temp = temp.values
+                    inputs = temp
                 else:
                     inputs = []
                     for feature in feature_cols:
-                        temp = joined.loc[batch, feature]
-                        temp = list(temp)
-                        print("start conversion to tensor")
+                        temp = joined.loc[batch, feature].to_numpy()
+                        temp = np.stack(temp, axis=0)
+                        print("start conversion to tensor", datetime.now())
                         inputs.append(tf.convert_to_tensor(temp))
-                        print("converted to tensor")
+                        print("converted to tensor", datetime.now())
                 labels = tf.convert_to_tensor([label for i in range(len(batch))])
                 histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
+                if save_as != None:
+                    with open("./models/" + save_as, "wb") as file:
+                        print("dump model", datetime.now())
+                        pickle.dump(model, file)
+                        print("model dumped", datetime.now())
+                    with open("./models/" + save_as + "_progress", "wb") as file:
+                        pickle.dump(progress, file)
+            progress = progress + 1
     return histories
