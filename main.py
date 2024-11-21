@@ -188,6 +188,6 @@ if __name__ == "__main__":
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs", "f0_lens"], model, 3, batch_size=3)
-    histories = classification.train(labels, feature_names, model, 3, batch_size=3, features=features, batch_method="samples")
+    histories = classification.train(labels, feature_names, model, 3, batch_size=100000, features=features, batch_method="samples")
     for history in histories:
         print(history)

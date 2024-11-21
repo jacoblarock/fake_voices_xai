@@ -169,6 +169,15 @@ def merge(matched_labels: pd.DataFrame,
         raise Exception("Case for data types not yet implemented or incompatible")
     return matched_labels
 
+def gen_batches(data: pd.DataFrame, batch_size: int) -> list[pd.Index]:
+    batches = []
+    indices = list(data.index)
+    for i in range(0, len(data) - batch_size, batch_size):
+        batches.append(indices[i:i+batch_size])
+    if len(indices) % batch_size != 0:
+        batches.append(indices[-(len(indices) % batch_size):])
+    return batches
+
 def train(matched_labels: pd.DataFrame,
           feature_cols: list[str],
           model: networks.models.Sequential,
@@ -191,11 +200,7 @@ def train(matched_labels: pd.DataFrame,
     float_max = np.finfo(np.float64).max
     if batch_method == "lines":
         print("creating batches", datetime.now())
-        indices = list(matched_labels.index)
-        for i in range(0, len(matched_labels) - batch_size, batch_size):
-            batches.append(indices[i:i+batch_size])
-        if len(indices) % batch_size != 0:
-            batches.append(indices[-(len(indices) % batch_size):])
+        batches = gen_batches(matched_labels, batch_size)
         print("created batches", datetime.now())
         print("begin batch training", datetime.now())
         for batch in batches:
@@ -228,17 +233,20 @@ def train(matched_labels: pd.DataFrame,
                 joined = joined.join(features[i].set_index(["sample"]), on=["sample"], how="inner")
                 joined = joined.rename(columns={"feature": feature_cols[i]})
                 joined = joined.drop(columns=["x", "y"])
-            if len(feature_cols) == 1:
-                temp = joined[feature_cols[0]].apply(np.clip, args=(float_min, float_max))
-                temp = list(temp)
-                inputs = tf.convert_to_tensor(temp)
-            else:
-                inputs = []
-                for feature in feature_cols:
-                    temp = joined[feature].apply(np.clip, args=(float_min, float_max))
+            joined = joined.reset_index(drop=True)
+            print("\nlen: ", len(joined), datetime.now())
+            batches = gen_batches(joined, batch_size)
+            for batch in batches:
+                if len(feature_cols) == 1:
+                    temp = joined.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
                     temp = list(temp)
-                    inputs.append(tf.convert_to_tensor(temp))
-            labels = tf.convert_to_tensor([label for i in range(len(joined))])
-            print("\nlen: ", len(labels), datetime.now())
-            histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
+                    inputs = tf.convert_to_tensor(temp)
+                else:
+                    inputs = []
+                    for feature in feature_cols:
+                        temp = joined.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
+                        temp = list(temp)
+                        inputs.append(tf.convert_to_tensor(temp))
+                labels = tf.convert_to_tensor([label for i in range(len(batch))])
+                histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
     return histories
