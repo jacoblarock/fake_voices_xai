@@ -205,14 +205,14 @@ def train(matched_labels: pd.DataFrame,
         print("begin batch training", datetime.now())
         for batch in batches:
             if len(feature_cols) == 1:
-                temp = matched_labels.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
+                temp = matched_labels.loc[batch, feature_cols[0]]#.apply(np.clip, args=(float_min, float_max))
                 # temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
                 temp = list(temp)
                 inputs = tf.convert_to_tensor(temp)
             else:
                 inputs = []
                 for feature in feature_cols:
-                    temp = matched_labels.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
+                    temp = matched_labels.loc[batch, feature]#.apply(np.clip, args=(float_min, float_max))
                     # temp = matched_labels.loc[batch, feature].apply(list)
                     temp = list(temp)
                     inputs.append(tf.convert_to_tensor(temp))
@@ -245,8 +245,11 @@ def train(matched_labels: pd.DataFrame,
                     inputs = []
                     for feature in feature_cols:
                         temp = joined.loc[batch, feature].apply(np.clip, args=(float_min, float_max))
+                        print("clipped")
                         temp = list(temp)
+                        print("listed")
                         inputs.append(tf.convert_to_tensor(temp))
+                        print("converted to tensor")
                 labels = tf.convert_to_tensor([label for i in range(len(batch))])
                 histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
     return histories
