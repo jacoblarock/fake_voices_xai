@@ -226,6 +226,12 @@ def train(matched_labels: pd.DataFrame,
         if save_as is not None and os.path.exists("./models/" + save_as + "_progress"):
             with open("./models/" + save_as + "_progress", "rb") as file:
                 progress = pickle.load(file)
+                print("load progress")
+        if save_as is not None and os.path.exists("./models/" + save_as):
+            with open("./models/" + save_as, "rb") as file:
+                model = pickle.load(file)
+                print("load model")
+        print(progress)
         samples = list(matched_labels["name"].drop_duplicates())[progress:]
         print("\nbegin batch training", datetime.now())
         for sample in samples:
@@ -263,6 +269,7 @@ def train(matched_labels: pd.DataFrame,
                         pickle.dump(model, file)
                         print("model dumped", datetime.now())
                     with open("./models/" + save_as + "_progress", "wb") as file:
+                        print("dump progress:", progress)
                         pickle.dump(progress, file)
             progress = progress + 1
     return histories
