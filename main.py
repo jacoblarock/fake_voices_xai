@@ -100,6 +100,7 @@ def extract_progressive_merging():
     # print("morph", datetime.now())
 
     return matched_labels
+    return (["hnrs", "mel_spec", "mfccs", "f0_lens"], matched_labels)
 
 def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
@@ -174,7 +175,8 @@ if __name__ == "__main__":
     # training batches made from a set number of lines
     # matched_labels = extract_progressive_merging()
 
-    feature_names, features = extract_separate()
+    feature_names, matched_labels = extract_progressive_merging()
+    # feature_names, features = extract_separate()
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
@@ -187,7 +189,7 @@ if __name__ == "__main__":
         utils.plot_model(model, "model_plot.png", show_shapes=True)
     except:
         print("model plot not possible")
-    # histories = classification.train(matched_labels, ["hnrs", "mel_spec", "mfccs", "f0_lens"], model, 3, batch_size=3)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing4")
+    histories = classification.train(matched_labels, feature_names, model, 3, batch_size=3)
+    # histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing4")
     for history in histories:
         print(history)

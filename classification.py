@@ -206,17 +206,19 @@ def train(matched_labels: pd.DataFrame,
         print("begin batch training", datetime.now())
         for batch in batches:
             if len(feature_cols) == 1:
-                temp = matched_labels.loc[batch, feature_cols[0]]#.apply(np.clip, args=(float_min, float_max))
-                # temp = matched_labels.loc[batch, feature_cols[0]].apply(list)
-                temp = list(temp)
+                temp = matched_labels.loc[batch, feature_cols[0]].to_numpy()
+                temp = np.stack(temp, axis=0)
+                print("start conversion to tensor", datetime.now())
                 inputs = tf.convert_to_tensor(temp)
+                print("converted to tensor", datetime.now())
             else:
                 inputs = []
                 for feature in feature_cols:
-                    temp = matched_labels.loc[batch, feature]#.apply(np.clip, args=(float_min, float_max))
-                    # temp = matched_labels.loc[batch, feature].apply(list)
-                    temp = list(temp)
+                    temp = matched_labels.loc[batch, feature].to_numpy()
+                    temp = np.stack(temp, axis=0)
+                    print("start conversion to tensor", datetime.now())
                     inputs.append(tf.convert_to_tensor(temp))
+                    print("converted to tensor", datetime.now())
             labels = tf.convert_to_tensor(matched_labels.loc[batch, "label"].apply(int))
             histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
     if batch_method == "samples":
@@ -250,9 +252,9 @@ def train(matched_labels: pd.DataFrame,
             batches = gen_batches(joined, batch_size)
             for batch in batches:
                 if len(feature_cols) == 1:
-                    temp = joined.loc[batch, feature_cols[0]].apply(np.clip, args=(float_min, float_max))
-                    temp = temp.values
-                    inputs = temp
+                    temp = joined.loc[batch, feature_cols[0]].to_numpy()
+                    temp = np.stack(temp, axis=0)
+                    inputs = tf.convert_to_tensor(temp)
                 else:
                     inputs = []
                     for feature in feature_cols:
