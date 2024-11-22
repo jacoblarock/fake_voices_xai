@@ -99,7 +99,6 @@ def extract_progressive_merging():
     # matched_labels["hnrs"] = matched_labels["hnrs"].apply(classification.morph, vsize=30)
     # print("morph", datetime.now())
 
-    return matched_labels
     return (["hnrs", "mel_spec", "mfccs", "f0_lens"], matched_labels)
 
 def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
