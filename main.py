@@ -188,7 +188,7 @@ if __name__ == "__main__":
         utils.plot_model(model, "model_plot.png", show_shapes=True)
     except:
         print("model plot not possible")
-    histories = classification.train(matched_labels, feature_names, model, 3, batch_size=3)
+    histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
     # histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing4")
     for history in histories:
         print(history)
