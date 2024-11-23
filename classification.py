@@ -169,14 +169,35 @@ def merge(matched_labels: pd.DataFrame,
         raise Exception("Case for data types not yet implemented or incompatible")
     return matched_labels
 
-def gen_batches(data: pd.DataFrame, batch_size: int) -> list[pd.Index]:
+def gen_batches(indices: pd.Index, batch_size: int) -> list[pd.Index]:
     batches = []
-    indices = list(data.index)
-    for i in range(0, len(data) - batch_size, batch_size):
+    for i in range(0, len(indices) - batch_size, batch_size):
         batches.append(indices[i:i+batch_size])
     if len(indices) % batch_size != 0:
         batches.append(indices[-(len(indices) % batch_size):])
     return batches
+
+def additive_merge(a: pd.DataFrame,
+                   b: pd.DataFrame,
+                   ) -> pd.DataFrame:
+    a_len = len(a)
+    b_len = len(b)
+    if b_len > a_len:
+        b, a = a, b
+        b_len, a_len = a_len, b_len
+    if b_len == 0:
+        return a
+    diff = a_len - b_len
+    # if the difference is greater than the length of b, concat b with itself
+    while diff >= b_len:
+        b = pd.concat((b, b)).reset_index(drop=True)
+        b_len = len(b)
+        diff = a_len - b_len
+    # if the difference is less than the length of b, concat b with a slice of itself
+    if 0 < diff < b_len:
+        b = pd.concat((b, b.loc[0:diff-1])).reset_index(drop=True)
+    return pd.concat((a, b), axis=1)
+
 
 def train(matched_labels: pd.DataFrame,
           feature_cols: list[str],
@@ -184,6 +205,7 @@ def train(matched_labels: pd.DataFrame,
           epochs: int,
           batch_method: str = "lines",
           batch_size: int = 100000,
+          sample_batch_size: int = 100,
           features: list[pd.DataFrame] = [],
           save_as: str | None = None
           ) -> list:
@@ -201,7 +223,7 @@ def train(matched_labels: pd.DataFrame,
     float_max = np.finfo(np.float64).max
     if batch_method == "lines":
         print("creating batches", datetime.now())
-        batches = gen_batches(matched_labels, batch_size)
+        batches = gen_batches(matched_labels.index, batch_size)
         print("created batches", datetime.now())
         print("begin batch training", datetime.now())
         for batch in batches:
@@ -234,22 +256,35 @@ def train(matched_labels: pd.DataFrame,
                 model = pickle.load(file)
                 print("load model")
         print(progress)
-        samples = list(matched_labels["name"].drop_duplicates())[progress:]
+        samples = matched_labels.loc[progress:].reset_index(drop=True)
         print("\nbegin batch training", datetime.now())
-        for sample in samples:
-            print("\ntrain: ", sample, datetime.now())
-            label = matched_labels.loc[matched_labels["name"] == sample, "label"]
-            print("\nlabel: ", label, datetime.now())
-            joined = pd.DataFrame({"sample": []})
-            joined.loc[0, "sample"] = sample
-            for i in range(len(features)):
-                joined = joined.join(features[i].set_index(["sample"]), on=["sample"], how="inner")
-                joined["feature"] = joined["feature"].apply(np.clip, args=(float_min, float_max))
-                joined = joined.rename(columns={"feature": feature_cols[i]})
-                joined = joined.drop(columns=["x", "y"])
-            joined = joined.reset_index(drop=True)
+        sample_batches = gen_batches(samples.index, sample_batch_size)
+        for sample_batch in sample_batches:
+            joined = pd.DataFrame([])
+            for col in feature_cols:
+                joined[col] = None
+            for line in sample_batch:
+                sample = samples.loc[line, "name"]
+                label = samples.loc[line, "label"]
+                print("\ntrain: ", sample, datetime.now())
+                print("\nlabel: ", label, datetime.now())
+                # joined = pd.DataFrame({"sample": []})
+                # joined.loc[0, "sample"] = sample
+                # for i in range(len(features)):
+                #     joined = joined.join(features[i].set_index(["sample"]), on=["sample"], how="inner")
+                #     joined["feature"] = joined["feature"].apply(np.clip, args=(float_min, float_max))
+                #     joined = joined.rename(columns={"feature": feature_cols[i]})
+                #     joined = joined.drop(columns=["x", "y"])
+                new_sample = pd.DataFrame([])
+                for i in range(len(features)):
+                    temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
+                    temp = pd.DataFrame({feature_cols[i]: temp["feature"]})
+                    new_sample = additive_merge(new_sample, temp)
+                new_sample["label"] = label
+                new_sample = new_sample.reset_index(drop=True)
+                joined = pd.concat((joined, new_sample))
             print("\nlen: ", len(joined), datetime.now())
-            batches = gen_batches(joined, batch_size)
+            batches = gen_batches(joined.index, batch_size)
             for batch in batches:
                 if len(feature_cols) == 1:
                     temp = joined.loc[batch, feature_cols[0]].to_numpy()
@@ -263,7 +298,7 @@ def train(matched_labels: pd.DataFrame,
                         print("start conversion to tensor", datetime.now())
                         inputs.append(tf.convert_to_tensor(temp))
                         print("converted to tensor", datetime.now())
-                labels = tf.convert_to_tensor([label for i in range(len(batch))])
+                labels = tf.convert_to_tensor(joined.loc[batch, "label"])
                 histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
                 if save_as != None:
                     with open("./models/" + save_as, "wb") as file:
@@ -275,3 +310,9 @@ def train(matched_labels: pd.DataFrame,
                         pickle.dump(progress, file)
             progress = progress + 1
     return histories
+
+if __name__ == "__main__":
+    a = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4], [5, 5, 5], [6, 6, 6]])
+    b = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    c = pd.DataFrame([])
+    print(additive_merge(a, c))
