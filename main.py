@@ -21,7 +21,7 @@ def plot_2d(data_arr):
     plt.show()
     return
 
-def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwargs, cache_suffix=""):
+def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwargs):
     # generate hnrs
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -30,7 +30,7 @@ def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwa
                                          feature_extraction.get_hnrs,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="hnrs" + cache_suffix
+                                   cache_name="hnrs"
                                    )
     print("hnrs extracted", datetime.now())
     print("shape", hnrs.shape)
@@ -49,7 +49,7 @@ def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwa
                                          feature_extraction.gen_mel_spec,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mel_spec" + cache_suffix
+                                   cache_name="mel_spec"
                                    )
     print("mel extracted", datetime.now())
     print("shape", mel_spec.shape)
@@ -68,7 +68,7 @@ def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwa
                                          feature_extraction.gen_mfcc,
                                          [30]],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mfccs" + cache_suffix
+                                   cache_name="mfccs"
                                    )
     print("mfccs extracted", datetime.now())
     print("shape", mfccs.shape)
@@ -87,7 +87,7 @@ def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwa
                                          feature_extraction.get_f0_lens,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="f0_lens" + cache_suffix
+                                   cache_name="f0_lens"
                                    )
     print("f0_lens extracted", datetime.now())
     print("shape", f0_lens.shape)
@@ -103,7 +103,7 @@ def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwa
 
     return (["hnrs", "mel_spec", "mfccs", "f0_lens"], matched_labels)
 
-def extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="") -> Tuple[list[str], list[pd.DataFrame]]:
+def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[str], list[pd.DataFrame]]:
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
                                    args=[dataset_dir,
@@ -111,7 +111,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="
                                          feature_extraction.get_hnrs,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="hnrs" + cache_suffix
+                                   cache_name="hnrs"
                                    )
     print("hnrs extracted", datetime.now())
     print("shape", hnrs.shape)
@@ -124,7 +124,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="
                                          feature_extraction.gen_mel_spec,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mel_spec" + cache_suffix
+                                   cache_name="mel_spec"
                                    )
     print("mel extracted", datetime.now())
     print("shape", mel_spec.shape)
@@ -137,7 +137,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="
                                          feature_extraction.gen_mfcc,
                                          [30]],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mfccs" + cache_suffix
+                                   cache_name="mfccs"
                                    )
     print("mfccs extracted", datetime.now())
     print("shape", mfccs.shape)
@@ -150,7 +150,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="
                                          feature_extraction.get_f0_lens,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="f0_lens" + cache_suffix
+                                   cache_name="f0_lens"
                                    )
     print("f0_lens extracted", datetime.now())
     print("shape", f0_lens.shape)
@@ -180,7 +180,7 @@ def eval(model: str | classification.networks.models.Sequential):
     print(model.summary())
 
     # creates a list of dataframes for each extracted feature for sample-based batching
-    feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="_asv2021")
+    feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
 def train():
     feature_extraction.check_cache()
