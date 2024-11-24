@@ -307,7 +307,7 @@ def train(matched_labels: pd.DataFrame,
     return histories
 
 # TODO: lines batch method
-def evalutate(labels: pd.DataFrame,
+def evaluate(labels: pd.DataFrame,
               feature_cols: list[str],
               features: list[pd.DataFrame],
               model: networks.models.Sequential,
@@ -320,7 +320,7 @@ def evalutate(labels: pd.DataFrame,
         if "name" not in labels.columns:
             raise Exception("please use an unmerged labels dataframe")
         samples = labels.reset_index(drop=True)
-        print("\nbegin batch training", datetime.now())
+        print("\nbegin batch eval", datetime.now())
         sample_batches = gen_batches(samples.index, sample_batch_size)
         for sample_batch in sample_batches:
             joined = pd.DataFrame([])
@@ -329,7 +329,7 @@ def evalutate(labels: pd.DataFrame,
             for line in sample_batch:
                 sample = samples.loc[line, "name"]
                 label = samples.loc[line, "label"]
-                print("\ntrain: ", sample, datetime.now())
+                print("\neval: ", sample, datetime.now())
                 print("\nlabel: ", label, datetime.now())
                 new_sample = pd.DataFrame([])
                 for i in range(len(features)):
@@ -357,6 +357,26 @@ def evalutate(labels: pd.DataFrame,
                 labels = tf.convert_to_tensor(joined.loc[batch, "label"])
                 results.append(model.evaluate(x=inputs, y=labels))
     return results
+
+def classify(model: networks.models.Sequential,
+             features: list[pd.DataFrame],
+             feature_cols: list[str]
+             ) -> np.ndarray:
+    joined = pd.DataFrame([])
+    for i in range(len(features)):
+        temp = pd.DataFrame({feature_cols[i]: features[i]["feature"]})
+        joined = additive_merge(joined, temp)
+    if len(feature_cols) == 1:
+        temp = joined.loc[joined.index, feature_cols[0]].to_numpy()
+        temp = np.stack(temp, axis=0)
+        inputs = tf.convert_to_tensor(temp)
+    else:
+        inputs = []
+        for feature in feature_cols:
+            temp = joined.loc[joined.index, feature].to_numpy()
+            temp = np.stack(temp, axis=0)
+            inputs.append(tf.convert_to_tensor(temp))
+    return model.predict(inputs)
 
 if __name__ == "__main__":
     a = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4], [5, 5, 5], [6, 6, 6]])

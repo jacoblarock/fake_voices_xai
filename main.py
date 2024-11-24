@@ -7,6 +7,7 @@ from typing import Tuple
 import pandas as pd
 from datetime import datetime
 from keras._tf_keras.keras import utils
+import numpy as np
 import pickle
 import os
 print("dependencies loaded")
@@ -182,6 +183,8 @@ def eval(model: str | classification.networks.models.Sequential):
     # creates a list of dataframes for each extracted feature for sample-based batching
     feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
+    classification.evaluate(labels, feature_names, features, model)
+
 def train():
     feature_extraction.check_cache()
 
@@ -220,5 +223,64 @@ def train():
     for history in histories:
         print(history)
 
+def classify_test(model: str | classification.networks.models.Sequential, filename: str):
+
+    dataset_dir = "./datasets/release_in_the_wild"
+    dataset_ext = "wav"
+
+    # load model if a path is provided
+    if type(model) == str:
+        model = pickle.load(open(model, "rb"))
+    print(model.summary())
+
+    hnrs = feature_extraction.bulk_extract(dataset_dir,
+                                           dataset_ext,
+                                           feature_extraction.get_hnrs,
+                                           [],
+                                           file_list=[filename],
+                                           window_length=30,
+                                           window_height=30,
+                                           cache=False,
+                                           use_cached=False)
+
+    mel_spec = feature_extraction.bulk_extract(dataset_dir,
+                                           dataset_ext,
+                                           feature_extraction.gen_mel_spec,
+                                           [],
+                                           file_list=[filename],
+                                           window_length=30,
+                                           window_height=30,
+                                           cache=False,
+                                           use_cached=False)
+
+    mfccs = feature_extraction.bulk_extract(dataset_dir,
+                                           dataset_ext,
+                                           feature_extraction.gen_mfcc,
+                                           [30],
+                                           file_list=[filename],
+                                           window_length=30,
+                                           window_height=30,
+                                           cache=False,
+                                           use_cached=False)
+
+    f0_lens = feature_extraction.bulk_extract(dataset_dir,
+                                           dataset_ext,
+                                           feature_extraction.get_f0_lens,
+                                           [],
+                                           file_list=[filename],
+                                           window_length=30,
+                                           window_height=30,
+                                           cache=False,
+                                           use_cached=False)
+
+    conf_val = np.average(classification.classify(model, [hnrs, mel_spec, mfccs, f0_lens], ["hnrs", "mel_spec", "mfccs", "f0_lens"]))
+    res = "spoof" if conf_val < 0.5 else "bona-fide"
+    return (conf_val, res)
+
 if __name__ == "__main__":
-    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
+    # eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
+    while True:
+        file = input("file: ") + ".wav"
+        conf_val, res = classify_test("trained_models/ItW_hnrs_melspec_mfcc_f0len", file)
+        print("result:", res + "!")
+        print("val:", conf_val)
