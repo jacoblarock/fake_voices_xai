@@ -11,10 +11,12 @@ import data_container
 import mt_operations
 
 def get_labels(path: str,
-               name_col: str,
-               label_col: str,
-               label_0_val: str,
-               label_1_val: str
+               name_col: str | int,
+               label_col: str | int,
+               label_0_val: str | int,
+               label_1_val: str | int,
+               delimiter: str = ",",
+               header: bool = False
                ) -> pd.DataFrame:
     """
     Returns labels from a csv file in a standardized dataframe. this is necessary for efficient label matching.
@@ -24,7 +26,7 @@ def get_labels(path: str,
      - label_0_val: value in the file of the result 0
      - label_1_val: value in the file of the result 1
     """
-    data = pd.read_csv(path)
+    data = pd.read_csv(path, delimiter=delimiter, header=None)
     data = data.rename(columns={label_col: "label"})
     data = data.rename(columns={name_col: "name"})
     data["label"] = data["label"].replace(label_0_val, 0)
@@ -203,7 +205,7 @@ def train(matched_labels: pd.DataFrame,
           feature_cols: list[str],
           model: networks.models.Sequential,
           epochs: int,
-          batch_method: str = "lines",
+          batch_method: str = "samples",
           batch_size: int = 100000,
           sample_batch_size: int = 100,
           features: list[pd.DataFrame] = [],
@@ -268,13 +270,6 @@ def train(matched_labels: pd.DataFrame,
                 label = samples.loc[line, "label"]
                 print("\ntrain: ", sample, datetime.now())
                 print("\nlabel: ", label, datetime.now())
-                # joined = pd.DataFrame({"sample": []})
-                # joined.loc[0, "sample"] = sample
-                # for i in range(len(features)):
-                #     joined = joined.join(features[i].set_index(["sample"]), on=["sample"], how="inner")
-                #     joined["feature"] = joined["feature"].apply(np.clip, args=(float_min, float_max))
-                #     joined = joined.rename(columns={"feature": feature_cols[i]})
-                #     joined = joined.drop(columns=["x", "y"])
                 new_sample = pd.DataFrame([])
                 for i in range(len(features)):
                     temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
@@ -310,6 +305,58 @@ def train(matched_labels: pd.DataFrame,
                         pickle.dump(progress, file)
             progress = progress + sample_batch_size
     return histories
+
+# TODO: lines batch method
+def evalutate(labels: pd.DataFrame,
+              feature_cols: list[str],
+              features: list[pd.DataFrame],
+              model: networks.models.Sequential,
+              batch_size: int = 100000,
+              sample_batch_size: int = 100,
+              batch_method: str = "samples"
+              ) -> list:
+    results = []
+    if batch_method == "samples":
+        if "name" not in labels.columns:
+            raise Exception("please use an unmerged labels dataframe")
+        samples = labels.reset_index(drop=True)
+        print("\nbegin batch training", datetime.now())
+        sample_batches = gen_batches(samples.index, sample_batch_size)
+        for sample_batch in sample_batches:
+            joined = pd.DataFrame([])
+            for col in feature_cols:
+                joined[col] = None
+            for line in sample_batch:
+                sample = samples.loc[line, "name"]
+                label = samples.loc[line, "label"]
+                print("\ntrain: ", sample, datetime.now())
+                print("\nlabel: ", label, datetime.now())
+                new_sample = pd.DataFrame([])
+                for i in range(len(features)):
+                    temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
+                    temp = pd.DataFrame({feature_cols[i]: temp["feature"]})
+                    new_sample = additive_merge(new_sample, temp)
+                new_sample["label"] = label
+                new_sample = new_sample.reset_index(drop=True)
+                joined = pd.concat((joined, new_sample))
+            print("\nlen: ", len(joined), datetime.now())
+            batches = gen_batches(joined.index, batch_size)
+            for batch in batches:
+                if len(feature_cols) == 1:
+                    temp = joined.loc[batch, feature_cols[0]].to_numpy()
+                    temp = np.stack(temp, axis=0)
+                    inputs = tf.convert_to_tensor(temp)
+                else:
+                    inputs = []
+                    for feature in feature_cols:
+                        temp = joined.loc[batch, feature].to_numpy()
+                        temp = np.stack(temp, axis=0)
+                        print("start conversion to tensor", datetime.now())
+                        inputs.append(tf.convert_to_tensor(temp))
+                        print("converted to tensor", datetime.now())
+                labels = tf.convert_to_tensor(joined.loc[batch, "label"])
+                results.append(model.evaluate(x=inputs, y=labels))
+    return results
 
 if __name__ == "__main__":
     a = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4], [5, 5, 5], [6, 6, 6]])

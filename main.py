@@ -7,6 +7,8 @@ from typing import Tuple
 import pandas as pd
 from datetime import datetime
 from keras._tf_keras.keras import utils
+import pickle
+import os
 print("dependencies loaded")
 
 def plot_1d(data_arr):
@@ -19,7 +21,7 @@ def plot_2d(data_arr):
     plt.show()
     return
 
-def extract_progressive_merging():
+def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwargs, cache_suffix=""):
     # generate hnrs
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -28,7 +30,7 @@ def extract_progressive_merging():
                                          feature_extraction.get_hnrs,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="hnrs"
+                                   cache_name="hnrs" + cache_suffix
                                    )
     print("hnrs extracted", datetime.now())
     print("shape", hnrs.shape)
@@ -47,7 +49,7 @@ def extract_progressive_merging():
                                          feature_extraction.gen_mel_spec,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mel_spec"
+                                   cache_name="mel_spec" + cache_suffix
                                    )
     print("mel extracted", datetime.now())
     print("shape", mel_spec.shape)
@@ -66,7 +68,7 @@ def extract_progressive_merging():
                                          feature_extraction.gen_mfcc,
                                          [30]],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mfccs"
+                                   cache_name="mfccs" + cache_suffix
                                    )
     print("mfccs extracted", datetime.now())
     print("shape", mfccs.shape)
@@ -85,7 +87,7 @@ def extract_progressive_merging():
                                          feature_extraction.get_f0_lens,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="f0_lens"
+                                   cache_name="f0_lens" + cache_suffix
                                    )
     print("f0_lens extracted", datetime.now())
     print("shape", f0_lens.shape)
@@ -101,7 +103,7 @@ def extract_progressive_merging():
 
     return (["hnrs", "mel_spec", "mfccs", "f0_lens"], matched_labels)
 
-def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
+def extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="") -> Tuple[list[str], list[pd.DataFrame]]:
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
                                    args=[dataset_dir,
@@ -109,7 +111,7 @@ def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
                                          feature_extraction.get_hnrs,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="hnrs"
+                                   cache_name="hnrs" + cache_suffix
                                    )
     print("hnrs extracted", datetime.now())
     print("shape", hnrs.shape)
@@ -122,7 +124,7 @@ def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
                                          feature_extraction.gen_mel_spec,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mel_spec"
+                                   cache_name="mel_spec" + cache_suffix
                                    )
     print("mel extracted", datetime.now())
     print("shape", mel_spec.shape)
@@ -135,7 +137,7 @@ def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
                                          feature_extraction.gen_mfcc,
                                          [30]],
                                    kwargs=extraction_kwargs,
-                                   cache_name="mfccs"
+                                   cache_name="mfccs" + cache_suffix
                                    )
     print("mfccs extracted", datetime.now())
     print("shape", mfccs.shape)
@@ -148,7 +150,7 @@ def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
                                          feature_extraction.get_f0_lens,
                                          []],
                                    kwargs=extraction_kwargs,
-                                   cache_name="f0_lens"
+                                   cache_name="f0_lens" + cache_suffix
                                    )
     print("f0_lens extracted", datetime.now())
     print("shape", f0_lens.shape)
@@ -156,7 +158,31 @@ def extract_separate() -> Tuple[list[str], list[pd.DataFrame]]:
 
     return (["hnrs", "mel_spec", "mfccs", "f0_lens"], [hnrs, mel_spec, mfccs, f0_lens])
 
-if __name__ == "__main__":
+def eval(model: str | classification.networks.models.Sequential):
+
+    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac"
+    dataset_ext = "flac"
+    extraction_kwargs={"cache": False,
+            "use_cached": False,
+            "window_length": 30,
+            "window_height": 30
+            }
+    dataset_files = pd.DataFrame({"name": list(os.listdir(dataset_dir))})
+
+    # load labels
+    labels = classification.get_labels("./datasets/ASVspoof2021_DF_eval/DF/CM/trial_metadata.txt", 1, 5, "spoof", "bonafide", delimiter=" ")
+    labels["name"] = labels["name"].apply(lambda x: x + ".flac")
+    labels = labels.join(dataset_files.set_index("name"), how="inner", on=["name"])
+
+    # load model if a path is provided
+    if type(model) == str:
+        model = pickle.load(open(model, "rb"))
+    print(model.summary())
+
+    # creates a list of dataframes for each extracted feature for sample-based batching
+    feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs, cache_suffix="_asv2021")
+
+def train():
     feature_extraction.check_cache()
 
     dataset_dir = "./datasets/release_in_the_wild"
@@ -164,7 +190,8 @@ if __name__ == "__main__":
     extraction_kwargs={"cache": False,
             "use_cached": False,
             "window_length": 30,
-            "window_height": 30}
+            "window_height": 30
+            }
 
     # get labels
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
@@ -172,10 +199,10 @@ if __name__ == "__main__":
 
     # create one large dataframe with all features labelled for training
     # training batches made from a set number of lines
-    # matched_labels = extract_progressive_merging()
-
     # feature_names, matched_labels = extract_progressive_merging()
-    feature_names, features = extract_separate()
+
+    # creates a list of dataframes for each extracted feature for sample-based batching
+    feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
@@ -192,3 +219,6 @@ if __name__ == "__main__":
     histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing4add")
     for history in histories:
         print(history)
+
+if __name__ == "__main__":
+    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
