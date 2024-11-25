@@ -16,7 +16,7 @@ def get_labels(path: str,
                label_0_val: str | int,
                label_1_val: str | int,
                delimiter: str = ",",
-               header: bool = False
+               header: bool = True
                ) -> pd.DataFrame:
     """
     Returns labels from a csv file in a standardized dataframe. this is necessary for efficient label matching.
@@ -26,7 +26,10 @@ def get_labels(path: str,
      - label_0_val: value in the file of the result 0
      - label_1_val: value in the file of the result 1
     """
-    data = pd.read_csv(path, delimiter=delimiter, header=None)
+    if header:
+        data = pd.read_csv(path, delimiter=delimiter)
+    else:
+        data = pd.read_csv(path, delimiter=delimiter, header=None)
     data = data.rename(columns={label_col: "label"})
     data = data.rename(columns={name_col: "name"})
     data["label"] = data["label"].replace(label_0_val, 0)
