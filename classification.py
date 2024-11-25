@@ -307,56 +307,56 @@ def train(matched_labels: pd.DataFrame,
     return histories
 
 # TODO: lines batch method
-def evaluate(labels: pd.DataFrame,
-              feature_cols: list[str],
-              features: list[pd.DataFrame],
-              model: networks.models.Sequential,
-              batch_size: int = 100000,
-              sample_batch_size: int = 100,
-              batch_method: str = "samples"
-              ) -> list:
-    results = []
-    if batch_method == "samples":
-        if "name" not in labels.columns:
-            raise Exception("please use an unmerged labels dataframe")
-        samples = labels.reset_index(drop=True)
-        print("\nbegin batch eval", datetime.now())
-        sample_batches = gen_batches(samples.index, sample_batch_size)
-        for sample_batch in sample_batches:
-            joined = pd.DataFrame([])
-            for col in feature_cols:
-                joined[col] = None
-            for line in sample_batch:
-                sample = samples.loc[line, "name"]
-                label = samples.loc[line, "label"]
-                print("\neval: ", sample, datetime.now())
-                print("\nlabel: ", label, datetime.now())
-                new_sample = pd.DataFrame([])
-                for i in range(len(features)):
-                    temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
-                    temp = pd.DataFrame({feature_cols[i]: temp["feature"]})
-                    new_sample = additive_merge(new_sample, temp)
-                new_sample["label"] = label
-                new_sample = new_sample.reset_index(drop=True)
-                joined = pd.concat((joined, new_sample))
-            print("\nlen: ", len(joined), datetime.now())
-            batches = gen_batches(joined.index, batch_size)
-            for batch in batches:
-                if len(feature_cols) == 1:
-                    temp = joined.loc[batch, feature_cols[0]].to_numpy()
-                    temp = np.stack(temp, axis=0)
-                    inputs = tf.convert_to_tensor(temp)
-                else:
-                    inputs = []
-                    for feature in feature_cols:
-                        temp = joined.loc[batch, feature].to_numpy()
-                        temp = np.stack(temp, axis=0)
-                        print("start conversion to tensor", datetime.now())
-                        inputs.append(tf.convert_to_tensor(temp))
-                        print("converted to tensor", datetime.now())
-                labels = tf.convert_to_tensor(joined.loc[batch, "label"])
-                results.append(model.evaluate(x=inputs, y=labels))
-    return results
+# def evaluate(labels: pd.DataFrame,
+#               feature_cols: list[str],
+#               features: list[pd.DataFrame],
+#               model: networks.models.Sequential,
+#               batch_size: int = 100000,
+#               sample_batch_size: int = 100,
+#               batch_method: str = "samples"
+#               ) -> list:
+#     results = []
+#     if batch_method == "samples":
+#         if "name" not in labels.columns:
+#             raise Exception("please use an unmerged labels dataframe")
+#         samples = labels.reset_index(drop=True)
+#         print("\nbegin batch eval", datetime.now())
+#         sample_batches = gen_batches(samples.index, sample_batch_size)
+#         for sample_batch in sample_batches:
+#             joined = pd.DataFrame([])
+#             for col in feature_cols:
+#                 joined[col] = None
+#             for line in sample_batch:
+#                 sample = samples.loc[line, "name"]
+#                 label = samples.loc[line, "label"]
+#                 print("\neval: ", sample, datetime.now())
+#                 print("\nlabel: ", label, datetime.now())
+#                 new_sample = pd.DataFrame([])
+#                 for i in range(len(features)):
+#                     temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
+#                     temp = pd.DataFrame({feature_cols[i]: temp["feature"]})
+#                     new_sample = additive_merge(new_sample, temp)
+#                 new_sample["label"] = label
+#                 new_sample = new_sample.reset_index(drop=True)
+#                 joined = pd.concat((joined, new_sample))
+#             print("\nlen: ", len(joined), datetime.now())
+#             batches = gen_batches(joined.index, batch_size)
+#             for batch in batches:
+#                 if len(feature_cols) == 1:
+#                     temp = joined.loc[batch, feature_cols[0]].to_numpy()
+#                     temp = np.stack(temp, axis=0)
+#                     inputs = tf.convert_to_tensor(temp)
+#                 else:
+#                     inputs = []
+#                     for feature in feature_cols:
+#                         temp = joined.loc[batch, feature].to_numpy()
+#                         temp = np.stack(temp, axis=0)
+#                         print("start conversion to tensor", datetime.now())
+#                         inputs.append(tf.convert_to_tensor(temp))
+#                         print("converted to tensor", datetime.now())
+#                 labels = tf.convert_to_tensor(joined.loc[batch, "label"])
+#                 results.append(model.evaluate(x=inputs, y=labels))
+#     return results
 
 def classify(model: networks.models.Sequential,
              features: list[pd.DataFrame],
@@ -377,6 +377,41 @@ def classify(model: networks.models.Sequential,
             temp = np.stack(temp, axis=0)
             inputs.append(tf.convert_to_tensor(temp))
     return model.predict(inputs)
+
+def evaluate(labels: pd.DataFrame,
+             feature_cols: list[str],
+             features: list[pd.DataFrame],
+             model: networks.models.Sequential,
+             threshold: float = 0.5,
+             summary_method: str = "average",
+             ) -> dict:
+    out = {"tp": 0,
+           "tn": 0,
+           "fp": 0,
+           "fn": 0}
+    for i in labels.index:
+        sample = labels.loc[i, "sample"]
+        label = labels.loc[i, "label"]
+        sample_features = []
+        for i in range(len(features)):
+            sample_features.append(features[i].loc[features[i]["sample"] == sample].reset_index(drop=True))
+        res_arr = classify(model, sample_features, feature_cols)
+        summary_func = np.average
+        if summary_method == "median":
+            summary_func = np.median
+        result = summary_func(res_arr)
+        result = 0 if result < threshold else 1
+        if label == 0:
+            if result == 0:
+                out["tn"] += 1
+            if result == 1:
+                out["fn"] += 1
+        if label == 1:
+            if result == 0:
+                out["fp"] += 1
+            if result == 1:
+                out["tp"] += 1
+    return out
 
 if __name__ == "__main__":
     a = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4], [5, 5, 5], [6, 6, 6]])

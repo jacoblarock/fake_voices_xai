@@ -225,8 +225,8 @@ def train():
 
 def classify_test(model: str | classification.networks.models.Sequential, filename: str):
 
-    dataset_dir = "./datasets/release_in_the_wild"
-    dataset_ext = "wav"
+    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac"
+    dataset_ext = "flac"
 
     # load model if a path is provided
     if type(model) == str:
@@ -273,14 +273,10 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
                                            cache=False,
                                            use_cached=False)
 
-    conf_val = np.average(classification.classify(model, [hnrs, mel_spec, mfccs, f0_lens], ["hnrs", "mel_spec", "mfccs", "f0_lens"]))
-    res = "spoof" if conf_val < 0.5 else "bona-fide"
-    return (conf_val, res)
+    results = classification.classify(model, [hnrs, mel_spec, mfccs, f0_lens], ["hnrs", "mel_spec", "mfccs", "f0_lens"])
+    avg = np.average(results)
+    median = np.median(results)
+    return (avg, median)
 
 if __name__ == "__main__":
-    # eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
-    while True:
-        file = input("file: ") + ".wav"
-        conf_val, res = classify_test("trained_models/ItW_hnrs_melspec_mfcc_f0len", file)
-        print("result:", res + "!")
-        print("val:", conf_val)
+    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
