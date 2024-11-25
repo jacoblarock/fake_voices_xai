@@ -1,6 +1,6 @@
 # fake_voices_xai
 
-Setup for experiments using explainable models to classify deepfake/bona-fide audio samples
+Setup for experiments using explainable models to classify deepfake/bona-fide audio samples.
 
 # Setup
 
