@@ -411,6 +411,7 @@ def evaluate(labels: pd.DataFrame,
                 out["fp"] += 1
             if result == 1:
                 out["tp"] += 1
+        print(out)
     return out
 
 if __name__ == "__main__":
