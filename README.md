@@ -16,9 +16,10 @@ conda activate fake_voices
 
 # Feature Extractors
 
-In this repo are several feature extractors that are used to translate audio samples into useful 
+In this repository, there are several feature extractors that are used to translate audio samples into useful 
 input for classification models. 
 Included are both perceptible and imperceptible features based on several sources of previous 
+IF a feature extractor is based on a feature found in the research, it is cited. Standard features (for example MFCCs) are not cited
 research.
 
 # Datasets
@@ -34,10 +35,21 @@ https://zenodo.org/records/4835108
 ```
 Datasets can be put in the `datasets` directory, which is in the .gitignore file.
 
-# extracted_features/
-In this directory, the python scripts can cache extracted features, so that they can be reused 
-without repeating computations. This directors is also excluded in the .gitignore file.
+# Notes on Implementation
 
-# test.py
+### Feature Extractors
+For these experiments various feature are applied to given datasets, resulting in dataframes containing arrays of extracted features. These can be, for each sample in the dataset, ints, one-dimensional arrays or two-dimensional arrays.
+For increased efficiency, there is a generic implementation of multithreading for file-based feature extraction. (in mt_operations)
 
-The `test.py` file is used for testing, and its contents are not especially relevant.
+### Data Preparation
+In order to prepare data for input into neural networks, a standerdizes array shape is needed. Because the extraced features do not result in standardized array shapes a sliding window is passed over every array for standardization.
+
+### Networks
+Each feature is processed separately by its own network. These networks are stitched together into a kind of meta-network to produce the end-classification.
+
+### Training and Evaluation
+Training is performed on batches of previously extracted features merged together and labelled.
+Evaluation is performed akin to training on batched of labelled features. Because of the nature of the sliding window over every file, there will be multiple evaluation results for every sample. These results are averaged and filtered by a threshold to produce a final result.
+
+### Note
+I have tried my best to include pydoc where it is relevant.
