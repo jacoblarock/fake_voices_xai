@@ -390,7 +390,7 @@ def evaluate(labels: pd.DataFrame,
            "fp": 0,
            "fn": 0}
     for i in labels.index:
-        sample = labels.loc[i, "sample"]
+        sample = labels.loc[i, "name"]
         label = labels.loc[i, "label"]
         sample_features = []
         for i in range(len(features)):
