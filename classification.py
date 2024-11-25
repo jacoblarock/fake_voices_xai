@@ -405,10 +405,10 @@ def evaluate(labels: pd.DataFrame,
             if result == 0:
                 out["tn"] += 1
             if result == 1:
-                out["fn"] += 1
+                out["fp"] += 1
         if label == 1:
             if result == 0:
-                out["fp"] += 1
+                out["fn"] += 1
             if result == 1:
                 out["tp"] += 1
         print(out)
