@@ -157,7 +157,46 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("shape", f0_lens.shape)
     print("max x:", max(f0_lens["x"]))
 
-    return (["hnrs", "mel_spec", "mfccs", "f0_lens"], [hnrs, mel_spec, mfccs, f0_lens])
+    onset_strength = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_onset_strength,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="onset_strength"
+                                   )
+    print("onset_strength extracted", datetime.now())
+    print("shape", onset_strength.shape)
+    print("max x:", max(onset_strength["x"]))
+
+    intensity = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_intensity,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="intensity"
+                                   )
+    print("intensity extracted", datetime.now())
+    print("shape", intensity.shape)
+    print("max x:", max(intensity["x"]))
+
+    pitch_flucs = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_pitch_fluctuation,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="pitch_flucs"
+                                   )
+    print("pitch_flucs extracted", datetime.now())
+    print("shape", pitch_flucs.shape)
+    print("max x:", max(pitch_flucs["x"]))
+
+    return (["hnrs", "mel_spec", "mfccs", "f0_lens", "onset_strength", "intensity", "pitch_flucs"], [hnrs, mel_spec, mfccs, f0_lens, onset_strength, intensity, pitch_flucs])
 
 def eval(model: str | classification.networks.models.Sequential):
 
@@ -215,6 +254,9 @@ def train():
     mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30)
     mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30)
     f0_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
+    onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
+    intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
+    pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
     model = networks.stitch_and_terminate([hnr_model, mel_model, mfcc_model, f0_model])
     print(model.summary())
     try:
@@ -222,7 +264,7 @@ def train():
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing4add")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing7add")
     for history in histories:
         print(history)
 
@@ -282,4 +324,5 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
     return (avg, median)
 
 if __name__ == "__main__":
-    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
+    train()
+    # eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
