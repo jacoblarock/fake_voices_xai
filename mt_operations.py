@@ -12,6 +12,15 @@ def apply_wrapper(data: pd.DataFrame | pd.Series,
                   function: Callable,
                   indices: list
                   ) -> pd.DataFrame | pd.Series:
+    """
+    MEANT FOR INTERNAL USE
+    Used by the workers of the multithreaded apply function
+    Applies a function to specified indices of a dataframe
+    Arguments:
+    - data: dataframe to which to apply
+    - function: function to apply
+    - indices: indices to which to apply
+    """
     # data.loc[indices] = data.loc[indices].apply(function)
     if type(data) == pd.DataFrame:
         out = pd.DataFrame(columns=data.columns)
@@ -25,6 +34,13 @@ def apply_wrapper(data: pd.DataFrame | pd.Series,
 def apply(data: pd.DataFrame | pd.Series,
           function: Callable
           ) -> pd.DataFrame | pd.Series:
+    """
+    A multithreaded implementation of df.apply for optimization purposes
+    The number of threads used is equal to the number of available threads with a maximum of 32
+    Arguments:
+    - data: dataframe to which to apply
+    - function: function to apply
+    """
     indices = data.index
     batches = []
     batch_size = max(len(data) // min(mp.cpu_count(), max_threads), 1)
@@ -61,6 +77,18 @@ def file_func(func: Callable,
               args: list = [],
               kwargs: dict = {},
               batch_size: int = 100) -> pd.DataFrame:
+    """
+    A multithreaded implimentation to apply a function to the contents of files in a directory
+    Arguments:
+    - func: function to apply
+    - directory: directory to search
+    Keyword arguments:
+    - cache: when True, results will be cached
+    - use_cached: when True, previously cached results will be used
+    - args: additional arguments to pass to func
+    - kwargs: additional kwargs to pass to the func
+    - batch_size: number of files to process in a single batch (by a single worker)
+    """
     if directory[-1] != "/":
         directory = directory + "/"
     if cache_name == None:

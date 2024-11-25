@@ -10,10 +10,15 @@ def create_cnn_2d(input_shape: Tuple[int, int],
                   output_size: int = -1
                   ) -> models.Sequential:
     """
-    creates a 2D cnn with:
-     - n_layers convolutional layers separated by max pooling layers
-     - n_filters filters in each convolutional layer
-     - a 2d input shape defined in a tuple (x, y)
+    creates a 2D cnn with the specified arguments
+    Arguments
+    - input_shape: the input shape of the cnn in a tuple (x, y)
+    - n_filters: filters in each convolutional layer
+    - n_layers: convolutional layers separated by max pooling layers
+    Keyword arguments:
+    - pooling: bool whether there should be pooling layers
+    - output_size: the output size of the model
+      If the value is -1 (default) there will not be a final dense layer and the size of the previous output will be final
     """
     model = models.Sequential()
     model.add(layers.Input((input_shape[0], input_shape[1], 1)))
@@ -37,10 +42,15 @@ def create_cnn_1d(input_shape: int,
                   output_size: int = -1
                   ) -> models.Sequential:
     """
-    creates a 1D cnn with:
-     - n_layers convolutional layers separated by max pooling layers
-     - n_filters filters in each convolutional layer
-     - a 1d input shape defined as an int
+    creates a 1D cnn with the specified arguments
+    Arguments
+    - input_shape: the input shape of the cnn in an int
+    - n_filters: filters in each convolutional layer
+    - n_layers: convolutional layers separated by max pooling layers
+    Keyword arguments:
+    - pooling: bool whether there should be pooling layers
+    - output_size: the output size of the model
+      If the value is -1 (default) there will not be a final dense layer and the size of the previous output will be final
     """
     model = models.Sequential()
     model.add(layers.Input((input_shape, 1)))
@@ -59,6 +69,11 @@ def create_cnn_1d(input_shape: int,
 
 def stitch_and_terminate(model_list: list[models.Sequential],
                          ) -> models.Model:
+    """
+    Stitch multiple models (created using the above functions) together to use multiple (non-concatted) features
+    Arguments:
+    - model_list: list of models to stitch together
+    """
     outputs = []
     for m in model_list:
         outputs.append(m.layers[-1].output)

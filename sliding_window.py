@@ -8,8 +8,8 @@ class window:
     def __init__(self, arr: np.ndarray, window_length: int, window_height: int = 10) -> None:
         """
         Constructor defines:
-         - arr: the array to iterate over
-         - window_length: the length of the window ahead of the current index
+        - arr: the array to iterate over
+        - window_length: the length of the window ahead of the current index
         """
         self.x = 0
         self.y = 0
@@ -32,7 +32,8 @@ class window:
     def x_hop(self, factor: float) -> int:
         """
         hop the window by a factor given
-        factor: percentage of window_length to hop
+        Argument:
+        - factor: percentage of window_length to hop
         returns 1 when the hop is made
         returns 0 when the hop could not be made, in which case the window moves to the final position
         """
@@ -45,7 +46,8 @@ class window:
     def y_hop(self, factor: float) -> int:
         """
         hop the window vertically by a factor given
-        factor: percentage of window_height to hop
+        Argument:
+        - factor: percentage of window_height to hop
         returns 1 when the hop is made
         returns 0 when the hop could not be made, in which case the window moves to the final position
         """

@@ -21,10 +21,13 @@ def get_labels(path: str,
     """
     Returns labels from a csv file in a standardized dataframe. this is necessary for efficient label matching.
     Arguments:
-     - path: the path of the label file
-     - label_col: the name of the column containing labels in the file
-     - label_0_val: value in the file of the result 0
-     - label_1_val: value in the file of the result 1
+    - path: the path of the label file
+    - label_col: the name of the column containing labels in the file
+    - label_0_val: value in the file of the result 0
+    - label_1_val: value in the file of the result 1
+    Keyword arguments:
+    - delimiter: the delimiter of the file
+    - header: bool, True if the file has a header line
     """
     if header:
         data = pd.read_csv(path, delimiter=delimiter)
@@ -47,11 +50,12 @@ def match_labels(labels: pd.DataFrame,
     Modifies the extracted_features dataframe to include labels from a labels dataframe.
     This dataframe is also returned.
     Arguments:
-     - labels: previously extracted label dataframe
-     - name: name of the matched label set for caching purposes
+    - labels: previously extracted label dataframe
+    - extracted_features: dataframe of extracted features to match to the labels
+    - name: name of the matched label set for caching purposes
     Keyword arguments:
-     - cache: if True, data will be saved to the cache
-     - use_cached: if True, previously cached data will be used, if it exists
+    - cache: if True, data will be saved to the cache
+    - use_cached: if True, previously cached data will be used, if it exists
     WARNING: The input extracted_features dataframe WILL be modified due to memory reasons
     """
     if cache or use_cached:
@@ -72,9 +76,11 @@ def match_labels(labels: pd.DataFrame,
                 pickle.dump(extracted_features, file)
     return extracted_features.rename(columns={"feature": name})
 
-# meant for internal use
-# expand a one dimensional array into two dimensions
 def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
+    """
+    MEANT FOR INTERNAL USE
+    Expand a one dimensional array into two dimensions
+    """
     if len(arr.shape) != 1:
         raise Exception("Vertical size of array to morph must be 1")
     out = np.ndarray((vsize, arr.shape[0]))
@@ -86,6 +92,14 @@ def join_features(matched_labels: pd.DataFrame,
                   feature: pd.DataFrame,
                   feature_name: str
                   ) -> pd.DataFrame:
+    """
+    Joins a dataframe with one or multiple features matched to labels (see match_labels) with another feature dataframe
+    This is used for the progressive join feature extraction method
+    Arguments:
+    - matched_labels: a previously matched label-feature dataframe
+    - feature: a new feature dataframe to join with the matched labels
+    - feature_name: name of the newly introduced feature to use in the output dataframe
+    """
     if matched_labels["x"][0] == -1 or feature["x"][0] == -1:
         matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="left", rsuffix=".temp")
     else:
@@ -104,6 +118,13 @@ def join_features(matched_labels: pd.DataFrame,
     return matched_labels
 
 def feature_concat(row):
+    """
+    MEANT FOR INTERNAL USE
+    Use the data_container class to concat two extracted feature arrays into one
+    This is a step in the progressive merging method
+    Arguments:
+    - row: one row of a matched_labels dataframe
+    """
     a = row["feature"].get_underlying()
     b = row["feature.temp"]
     row["feature.temp"] = np.nan
@@ -175,6 +196,12 @@ def merge(matched_labels: pd.DataFrame,
     return matched_labels
 
 def gen_batches(indices: pd.Index, batch_size: int) -> list[pd.Index]:
+    """
+    Generates batches of indices based on an input dataframe and a batch size
+    Arguments:
+    - indices: a pd.Index object from the dataframe to batch
+    - batch_size: size of the batches to create
+    """
     batches = []
     for i in range(0, len(indices) - batch_size, batch_size):
         batches.append(indices[i:i+batch_size])
@@ -185,6 +212,13 @@ def gen_batches(indices: pd.Index, batch_size: int) -> list[pd.Index]:
 def additive_merge(a: pd.DataFrame,
                    b: pd.DataFrame,
                    ) -> pd.DataFrame:
+    """
+    Joins two arbitrary dataframes by merging them additively
+    MUCH less resource and memory intensive than a cross join without losing any samples
+    Arguments:
+    - a: first dataframe to merge
+    - b: second dataframe to merge
+    """
     a_len = len(a)
     b_len = len(b)
     if b_len > a_len:
@@ -217,9 +251,20 @@ def train(matched_labels: pd.DataFrame,
     """
     Trains an input model based on previously matched labels and features
     Arguments:
-     - matched_labels: previously generated dataframe of matched labels and features(s)
-     - model: model to train
-     - epochs: number of epochs to train
+    - matched_labels: previously generated dataframe of matched labels and features(s)
+    - feature_cols: list of the names of the features in either the matched_labels or features dataframe
+    - model: model to train
+    - epochs: number of epochs to train
+    Keyword arguments:
+    - batch_method: either "samples" or "lines"
+      "lines" will expect a matched_labels dataframe containing labels and features and iterate in batched over the lines of this dataframe
+      "samples" will expect on dataframe with only the labels (unmatched) and a list of dataframes passed through the features kwarg.
+      Batches with this method are file-based and created with the additive join instead of a left-join, resulting in no potential loss and infill with zeroes
+    - batch_size: MAXIMUM batch size; used for both batch methods
+    - sample_batch_size: ONLY for the "samples" batch method; number of files to include in one sample-based batch
+      batch_size will come into effect with this method only when the result of the additive join on the file batch is longer than batch_size
+    - features: a list of dataframes containing extracted features for use with the "samples" batch method
+    - save_as: path to save the model under after each training batch
     """
     inputs = None
     batches = []
@@ -365,6 +410,13 @@ def classify(model: networks.models.Sequential,
              features: list[pd.DataFrame],
              feature_cols: list[str]
              ) -> np.ndarray:
+    """
+    Classifies an INDIVIDUAL sample based on an input model and features
+    Arguments:
+    - model: TRAINED model to use for classification
+    - features: a list of dataframes features extracted from the sample
+    - feature_cols: the names of the features in the dataframes of features
+    """
     joined = pd.DataFrame([])
     for i in range(len(features)):
         temp = pd.DataFrame({feature_cols[i]: features[i]["feature"]})
@@ -388,6 +440,17 @@ def evaluate(labels: pd.DataFrame,
              threshold: float = 0.5,
              summary_method: str = "average",
              ) -> dict:
+    """
+    Classifies a directory of samples and returns summary statistics on model accuracy
+    Arguments:
+    - labels: dataframe of labels to use for prediction evaluation
+    - feature_cols: list of names of features in the features list
+    - features: list of dataframes of extracted features
+    - model: model to evaluate
+    Keyword arguments:
+    - threshold: threshold for classification: below the threshold is classified as 0, above is 1
+    - summary_method: summarize the results of the classifications using either the "average" (statistical mean) or the "median"
+    """
     out = {"tp": 0,
            "tn": 0,
            "fp": 0,

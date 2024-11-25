@@ -56,15 +56,15 @@ def bulk_extract(directory: str,
     """
     Apply a given feature extractor to a directory of files.
     Positional arguments:
-     - directory: directory path to search in
-     - extension: extension of the files (for example, ".wav")
-     - feature: Callable to apply to the audio files
-     - args: arguments for the feature extractor function, if necessary, for example gen_mfcc expects a "count" argument.
+    - directory: directory path to search in
+    - extension: extension of the files (for example, ".wav")
+    - feature: Callable to apply to the audio files
+    - args: arguments for the feature extractor function, if necessary, for example gen_mfcc expects a "count" argument.
     Keyword arguments:
-     - summarize: whether the results (if results are np.ndarray) should be summarizes into quantiles (default False)
-     - cache: whether the results should be cached (default True)
-     - use_cached: whether previously cached results should be returned (default True)
-       NOTE: cache=True and use_cached=False will overwrite an existing cache, if one exists
+    - summarize: whether the results (if results are np.ndarray) should be summarizes into quantiles (default False)
+    - cache: whether the results should be cached (default True)
+    - use_cached: whether previously cached results should be returned (default True)
+      NOTE: cache=True and use_cached=False will overwrite an existing cache, if one exists
     """
     if cache or use_cached:
         check_cache()
