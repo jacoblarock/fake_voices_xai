@@ -219,7 +219,7 @@ def get_hnrs(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 
 # Onset strength (per Li et al, 2022)
 def get_onset_strength(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
-    return lr.onset.onset_strength_multi(y=samples, sr=sample_rate, hop_length=160)
+    return lr.onset.onset_strength_multi(y=samples, sr=sample_rate, hop_length=160)[0]
 
 # Intensity (per Li et al, 2022)
 def get_intensity(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
