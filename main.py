@@ -188,7 +188,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
                                    args=[dataset_dir,
                                          dataset_ext,
                                          feature_extraction.get_pitch_fluctuation,
-                                         []],
+                                         [1]],
                                    kwargs=extraction_kwargs,
                                    cache_name="pitch_flucs"
                                    )
