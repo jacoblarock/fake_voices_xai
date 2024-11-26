@@ -257,7 +257,7 @@ def train():
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
     pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    model = networks.stitch_and_terminate([hnr_model, mel_model, mfcc_model, f0_model])
+    model = networks.stitch_and_terminate([hnr_model, mel_model, mfcc_model, f0_model, onset_strength_model, intensity_model, pitch_fluc_model])
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_shapes=True)
