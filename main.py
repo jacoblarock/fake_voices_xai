@@ -200,19 +200,23 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
 
 def eval(model: str | classification.networks.models.Sequential):
 
-    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac"
-    dataset_ext = "flac"
+    dataset_dir = "./datasets/release_in_the_wild/"
+    dataset_ext = "wav"
     extraction_kwargs={"cache": False,
             "use_cached": False,
             "window_length": 30,
             "window_height": 30
             }
-    dataset_files = pd.DataFrame({"name": list(os.listdir(dataset_dir))})
+    # filter for the samples to evaluate
+    # filter = pd.DataFrame({"name": list(os.listdir(dataset_dir))})
+    filter = pd.DataFrame({"name": list(range(9400, 31778))})
+    # If necessary, change the filter to str and append file endings
+    filter = filter.apply(lambda x : str(x) + ".wav")
 
     # load labels
-    labels = classification.get_labels("./datasets/ASVspoof2021_DF_eval/DF/CM/trial_metadata.txt", 1, 5, "spoof", "bonafide", delimiter=" ")
-    labels["name"] = labels["name"].apply(lambda x: x + ".flac")
-    labels = labels.join(dataset_files.set_index("name"), how="inner", on=["name"])
+    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", 1, 5, "spoof", "bonafide", delimiter=" ")
+    # labels["name"] = labels["name"].apply(lambda x: x + ".flac")
+    labels = labels.join(filter.set_index("name"), how="inner", on=["name"])
 
     # load model if a path is provided
     if type(model) == str:
@@ -325,4 +329,4 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
 
 if __name__ == "__main__":
     # train()
-    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
+    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400")
