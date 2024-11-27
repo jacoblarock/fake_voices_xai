@@ -324,5 +324,5 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
     return (avg, median)
 
 if __name__ == "__main__":
-    train()
-    # eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
+    # train()
+    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len")
