@@ -214,7 +214,7 @@ def eval(model: str | classification.networks.models.Sequential):
     filter = filter.apply(lambda x : str(x) + ".wav")
 
     # load labels
-    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", 1, 5, "spoof", "bonafide", delimiter=",")
+    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
     # labels["name"] = labels["name"].apply(lambda x: x + ".flac")
     labels = labels.join(filter.set_index("name"), how="inner", on=["name"])
 
