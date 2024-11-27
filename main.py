@@ -211,7 +211,7 @@ def eval(model: str | classification.networks.models.Sequential):
     # filter = pd.DataFrame({"name": list(os.listdir(dataset_dir))})
     filter = pd.DataFrame({"name": list(range(9400, 31778))})
     # If necessary, change the filter to str and append file endings
-    filter = filter.apply(lambda x : str(x) + ".wav")
+    filter["name"] = filter["name"].apply(lambda x : str(x) + ".wav")
 
     # load labels
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
