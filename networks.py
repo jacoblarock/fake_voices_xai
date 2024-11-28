@@ -67,6 +67,13 @@ def create_cnn_1d(input_shape: int,
                   metrics=["accuracy"])
     return model
 
+def single_input():
+    model = models.Sequential()
+    model.add(layers.Input((1, 1)))
+    model.compile(optimizer="adam",
+                  loss="mean_squared_error",
+                  metrics=["accuracy"])
+
 def stitch_and_terminate(model_list: list[models.Sequential],
                          ) -> models.Model:
     """

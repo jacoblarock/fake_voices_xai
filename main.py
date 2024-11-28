@@ -196,6 +196,20 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("shape", pitch_flucs.shape)
     print("max x:", max(pitch_flucs["x"]))
 
+    local_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_local_jitter,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="local_jitter"
+                                   )
+    print("local_jitter extracted", datetime.now())
+    print("shape", local_jitter.shape)
+    print("max x:", max(local_jitter["x"]))
+    print(local_jitter)
+
     return (["hnrs", "mel_spec", "mfccs", "f0_lens", "onset_strength", "intensity", "pitch_flucs"], [hnrs, mel_spec, mfccs, f0_lens, onset_strength, intensity, pitch_flucs])
 
 def eval(model: str | classification.networks.models.Sequential, eval_from: int):

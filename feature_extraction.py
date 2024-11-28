@@ -95,7 +95,7 @@ def bulk_extract(directory: str,
                         state = window.smart_hop(0.5)
                         out.append((file, window.x, window.y, window.get_window()))
                 else:
-                    out.append((file, -1, -1, extracted_feature))
+                    out.append((file, -1, -1, np.array([extracted_feature])))
             if summarize:
                 out.append((file, 0, get_summary_stats(feature(samples, sample_rate, *args))))
         if cache:
@@ -145,57 +145,57 @@ def get_f0_lens(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 
 # Perceptible features from Chaiwongyen et al, 2023:
 # Jitter compared to next neighbor sample
-def get_local_jitter(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def get_local_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
     rolled_f0 = np.roll(f0_lens, -1)
     difsum = sum(np.abs(f0_lens[:-1] - rolled_f0[:-1]))
     del rolled_f0
-    return np.array(((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100)
+    return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
 # Jitter compared to both neighboring samples
-def get_rap_jitter(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def get_rap_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
     difsum = 0
     for i in range(1, N - 1):
         difsum += np.abs(f0_lens[i] - np.average(f0_lens[i-1:i+2]))
-    return np.array(((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100)
+    return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
 # Jitter compared to nearest five neighbors
-def get_ppq5_jitter(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def get_ppq5_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
     difsum = 0
     for i in range(2, N - 2):
         difsum += np.abs(f0_lens[i] - np.average(f0_lens[i-2:i+3]))
-    return np.array(((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100)
+    return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
 # Jitter compared to nearest fifty five neighbors
-def get_ppq55_jitter(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def get_ppq55_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
     N = len(f0_lens)
     difsum = 0
     for i in range(27, N - 27):
         difsum += np.abs(f0_lens[i] - np.average(f0_lens[i-27:i+28]))
-    return np.array(((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100)
+    return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(f0_lens))) * 100
 
 # Shimmer compared to next neighbor sample
-def get_shim_local(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
+def get_shim_local(samples: np.ndarray, sample_rate: int | float) -> float:
     N = len(samples)
     rolled_amps = np.roll(samples, -1)
     difsum = sum(np.abs(samples[:-1] - rolled_amps[:-1]))
     del rolled_amps
-    return np.array(((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100)
+    return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
 # Shimmer compared to n (count) neighboring samples
-def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> np.ndarray:
+def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> float:
     N = len(samples)
     m = int((count - 1) / 2)
     difsum = 0
     for i in range(m, N - m):
         difsum += np.abs(samples[i] - np.average(samples[i-m:i+m+1]))
-    return np.array(((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100)
+    return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
 # TODO: Further harmonic features from Chaiwongyen et al, 2023 / Li et al, 2022
 
