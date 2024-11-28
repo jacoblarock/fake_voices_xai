@@ -389,7 +389,7 @@ def train(eval_until: int):
     # feature_names, matched_labels = extract_progressive_merging()
 
     # creates a list of dataframes for each extracted feature for sample-based batching
-    # feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
+    feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
@@ -428,7 +428,7 @@ def train(eval_until: int):
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="testing7add")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="test_multi_percep281124")
     for history in histories:
         print(history)
 
@@ -491,5 +491,5 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(9400)
-    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400", 9400)
+    train(10000)
+    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400", 10000)
