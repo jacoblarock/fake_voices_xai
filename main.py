@@ -198,7 +198,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
 
     return (["hnrs", "mel_spec", "mfccs", "f0_lens", "onset_strength", "intensity", "pitch_flucs"], [hnrs, mel_spec, mfccs, f0_lens, onset_strength, intensity, pitch_flucs])
 
-def eval(model: str | classification.networks.models.Sequential):
+def eval(model: str | classification.networks.models.Sequential, eval_from: int):
 
     dataset_dir = "./datasets/release_in_the_wild/"
     dataset_ext = "wav"
@@ -209,9 +209,9 @@ def eval(model: str | classification.networks.models.Sequential):
             }
     # filter for the samples to evaluate
     # filter = pd.DataFrame({"name": list(os.listdir(dataset_dir))})
-    filter = pd.DataFrame({"name": list(range(9400, 31778))})
+    filter = pd.DataFrame({"name": list(range(eval_from, 31778))})
     # If necessary, change the filter to str and append file endings
-    filter["name"] = filter["name"].apply(lambda x : str(x) + ".wav")
+    filter["name"] = filter["name"].apply(lambda x : str(x) + "." + dataset_ext)
 
     # load labels
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
@@ -231,7 +231,7 @@ def eval(model: str | classification.networks.models.Sequential):
     with open("cache/result.txt", "w") as file:
         file.write(str(result))
 
-def train():
+def train(eval_until: int):
     feature_extraction.check_cache()
 
     dataset_dir = "./datasets/release_in_the_wild"
@@ -242,8 +242,13 @@ def train():
             "window_height": 30
             }
 
+    filter = pd.DataFrame({"name": list(range(eval_until))})
+    # If necessary, change the filter to str and append file endings
+    filter["name"] = filter["name"].apply(lambda x : str(x) + "." + dataset_ext)
+
     # get labels
     labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
+    labels = labels.join(filter.set_index("name"), how="inner", on=["name"])
     print("labels", datetime.now())
 
     # create one large dataframe with all features labelled for training
@@ -328,5 +333,8 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
     return (avg, median)
 
 if __name__ == "__main__":
-    # train()
-    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400")
+    """
+    More specific parameters are in the extraction, train and eval functions, such as dataset directory.
+    """
+    train(9400)
+    eval("trained_models/ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400", 9400)
