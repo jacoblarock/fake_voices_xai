@@ -439,7 +439,8 @@ def evaluate(labels: pd.DataFrame,
              model: networks.models.Sequential,
              threshold: float = 0.5,
              summary_method: str = "average",
-             ) -> dict:
+             save_as: str | None = None
+             ) -> Tuple[list, dict]:
     """
     Classifies a directory of samples and returns summary statistics on model accuracy
     Arguments:
@@ -451,10 +452,11 @@ def evaluate(labels: pd.DataFrame,
     - threshold: threshold for classification: below the threshold is classified as 0, above is 1
     - summary_method: summarize the results of the classifications using either the "average" (statistical mean) or the "median"
     """
-    out = {"tp": 0,
+    summary = {"tp": 0,
            "tn": 0,
            "fp": 0,
            "fn": 0}
+    results = []
     for i in labels.index:
         sample = labels.loc[i, "name"]
         label = labels.loc[i, "label"]
@@ -466,19 +468,20 @@ def evaluate(labels: pd.DataFrame,
         if summary_method == "median":
             summary_func = np.median
         result = summary_func(res_arr)
+        results.append(result)
         result = 0 if result < threshold else 1
         if label == 0:
             if result == 0:
-                out["tn"] += 1
+                summary["tn"] += 1
             if result == 1:
-                out["fp"] += 1
+                summary["fp"] += 1
         if label == 1:
             if result == 0:
-                out["fn"] += 1
+                summary["fn"] += 1
             if result == 1:
-                out["tp"] += 1
-        print(out)
-    return out
+                summary["tp"] += 1
+        print(summary)
+    return results, summary
 
 if __name__ == "__main__":
     a = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4], [5, 5, 5], [6, 6, 6]])

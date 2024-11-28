@@ -359,10 +359,12 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
     # creates a list of dataframes for each extracted feature for sample-based batching
     feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
-    result = classification.evaluate(labels, feature_names, features, model)
-    print(result)
-    with open("cache/result.txt", "w") as file:
-        file.write(str(result))
+    results, summary = classification.evaluate(labels, feature_names, features, model)
+    print(summary)
+    with open("cache/results.txt", "w") as file:
+        file.write(str(results))
+    with open("cache/results-summary.txt", "w") as file:
+        file.write(str(summary))
 
 def train(eval_until: int):
     feature_extraction.check_cache()
