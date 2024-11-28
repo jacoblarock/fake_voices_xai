@@ -208,9 +208,128 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("local_jitter extracted", datetime.now())
     print("shape", local_jitter.shape)
     print("max x:", max(local_jitter["x"]))
-    print(local_jitter)
 
-    return (["hnrs", "mel_spec", "mfccs", "f0_lens", "onset_strength", "intensity", "pitch_flucs"], [hnrs, mel_spec, mfccs, f0_lens, onset_strength, intensity, pitch_flucs])
+    rap_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_rap_jitter,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="rap_jitter"
+                                   )
+    print("rap_jitter extracted", datetime.now())
+    print("shape", rap_jitter.shape)
+    print("max x:", max(rap_jitter["x"]))
+
+    ppq5_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_ppq5_jitter,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="ppq5_jitter"
+                                   )
+    print("ppq5_jitter extracted", datetime.now())
+    print("shape", ppq5_jitter.shape)
+    print("max x:", max(ppq5_jitter["x"]))
+
+    ppq55_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_ppq55_jitter,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="ppq55_jitter"
+                                   )
+    print("ppq55_jitter extracted", datetime.now())
+    print("shape", ppq55_jitter.shape)
+    print("max x:", max(ppq55_jitter["x"]))
+
+    local_shim = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_shim_local,
+                                         []],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="local_shim"
+                                   )
+    print("local_shim extracted", datetime.now())
+    print("shape", local_shim.shape)
+    print("max x:", max(local_shim["x"]))
+
+    rap_shim = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_shim_apqx,
+                                         [3]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="rap_shim"
+                                   )
+    print("rap_shim extracted", datetime.now())
+    print("shape", rap_shim.shape)
+    print("max x:", max(rap_shim["x"]))
+
+    ppq5_shim = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_shim_apqx,
+                                         [5]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="ppq5_shim"
+                                   )
+    print("ppq5_shim extracted", datetime.now())
+    print("shape", ppq5_shim.shape)
+    print("max x:", max(ppq5_shim["x"]))
+
+    ppq55_shim = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_shim_apqx,
+                                         [55]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="ppq55_shim"
+                                   )
+    print("ppq55_shim extracted", datetime.now())
+    print("shape", ppq55_shim.shape)
+    print("max x:", max(ppq55_shim["x"]))
+
+    return (["hnrs",
+             "mel_spec",
+             "mfccs",
+             "f0_lens",
+             "onset_strength",
+             "intensity",
+             "pitch_flucs",
+             "local_jitter",
+             "rap_jitter",
+             "ppq5_jitter",
+             "ppq55_jitter",
+             "local_shim",
+             "rap_shim",
+             "ppq5_shim",
+             "ppq55_shim"],
+            [hnrs,
+             mel_spec,
+             mfccs,
+             f0_lens,
+             onset_strength,
+             intensity,
+             pitch_flucs,
+             local_jitter,
+             rap_jitter,
+             ppq5_jitter,
+             ppq55_jitter,
+             local_shim,
+             rap_shim,
+             ppq5_shim,
+             ppq55_shim])
 
 def eval(model: str | classification.networks.models.Sequential, eval_from: int):
 
@@ -270,7 +389,7 @@ def train(eval_until: int):
     # feature_names, matched_labels = extract_progressive_merging()
 
     # creates a list of dataframes for each extracted feature for sample-based batching
-    feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
+    # feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
@@ -280,7 +399,29 @@ def train(eval_until: int):
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
     pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    model = networks.stitch_and_terminate([hnr_model, mel_model, mfcc_model, f0_model, onset_strength_model, intensity_model, pitch_fluc_model])
+    local_jitter_model = networks.single_input()
+    rap_jitter_model = networks.single_input()
+    ppq5_jitter_model = networks.single_input()
+    ppq55_jitter_model = networks.single_input()
+    local_shim_model = networks.single_input()
+    rap_shim_model = networks.single_input()
+    ppq5_shim_model = networks.single_input()
+    ppq55_shim_model = networks.single_input()
+    model = networks.stitch_and_terminate([hnr_model,
+                                           mel_model,
+                                           mfcc_model,
+                                           f0_model,
+                                           onset_strength_model,
+                                           intensity_model,
+                                           pitch_fluc_model,
+                                           local_jitter_model,
+                                           rap_jitter_model,
+                                           ppq5_jitter_model,
+                                           ppq55_jitter_model,
+                                           local_shim_model,
+                                           rap_shim_model,
+                                           ppq5_shim_model,
+                                           ppq55_shim_model])
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_shapes=True)
