@@ -299,6 +299,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("ppq55_shim extracted", datetime.now())
     print("shape", ppq55_shim.shape)
     print("max x:", max(ppq55_shim["x"]))
+    print(local_jitter["feature"])
 
     return (["hnrs",
              "mel_spec",

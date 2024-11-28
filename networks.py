@@ -70,6 +70,7 @@ def create_cnn_1d(input_shape: int,
 def single_input():
     model = models.Sequential()
     model.add(layers.Input((1, 1)))
+    model.add(layers.Flatten())
     model.add(layers.Dense(1))
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
