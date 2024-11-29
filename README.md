@@ -44,13 +44,31 @@ There are pickle dumps of trained models in the trained_models directory of this
 	* Mel-spectrograms
 	* MFCCs
 	* Fundamental frequency lengths
-- ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400: This model was trained on the first 9400 samples of the In-The-Wild dataset, and evaluated on the rest. In evaluation, the model achieves an accuracy of 90,93%. It was trained on the following features:
+- ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400: This model was trained on the first 9400 samples of the In-The-Wild dataset and evaluated on the rest. In evaluation, the model achieves an accuracy of 90,93% with a threshold of 0.5. It was trained on the following features:
 	- Perceptible:
 		* Harmonic-noise ratios
 		* Fundamental frequency lengths
 		* Onset strengths
 		* Intensity
 		* Pitch fluctuations
+	- Imperceptible:
+		* Mel-spectrograms
+		* MFCCs
+- ItW_multi_percep_until10000: This model was trained on the first 10000 samples of the In-The-Wild dataset and evaluated on the rest. In evaluation, the model achieves an accuracy of approximately 94% with a threshold of 0.5. It was trained using the following features:
+	- Perceptible:
+		* Harmonic-noise ratios
+		* Fundamental frequency lengths
+		* Onset strengths
+		* Intensity
+		* Pitch fluctuations
+		* Local jitter
+		* Rap jitter
+		* ppq5 jitter
+		* ppq55 jitter
+		* Local shimmer
+		* Rap shimmer
+		* ppq5 shimmer
+		* ppq55 shimmer
 	- Imperceptible:
 		* Mel-spectrograms
 		* MFCCs
