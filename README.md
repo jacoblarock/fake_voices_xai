@@ -1,7 +1,7 @@
 # fake_voices_xai
 
 This repository is a setup for experiments using explainable models to classify deepfake/bona-fide audio samples.  
-It consists of feature extraction functions and data preparation, to create usable inputs for models as well as
+It consists of feature extraction functions and data preparation to create usable inputs for models as well as
 a creation, training and evaluation setup for a traditional (not explainable) model, with the intent of using it as a surrogate for a later explainable model.
 Implementation of explainability using LIME or similar is planned in the near future.
 
