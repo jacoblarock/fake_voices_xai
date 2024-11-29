@@ -37,6 +37,24 @@ https://zenodo.org/records/4835108
 ```
 Datasets can be put in the `datasets` directory, which is in the .gitignore file.
 
+# Models (traditional)
+There are pickle dumps of trained models in the trained_models directory of this repository that can be used for evaluation or surrogate purposes. The file names are a summary of the features involved and the training.
+- ItW_hnrs_melspec_mfcc_f0len: This model was trained with the following features on the entire In-The-Wild dataset:
+	* Harmonic-noise ratios
+	* Mel-spectrograms
+	* MFCCs
+	* Fundamental frequency lengths
+- ItW_hnrs_melspec_mfcc_f0len_onsets_intensity_pitch_u9400: This model was trained on the first 9400 samples of the In-The-Wild dataset, and evaluated on the rest. In evaluation, the model achieves an accuracy of 90,93%. It was trained on the following features:
+	- Perceptible:
+		* Harmonic-noise ratios
+		* Fundamental frequency lengths
+		* Onset strengths
+		* Intensity
+		* Pitch fluctuations
+	- Imperceptible:
+		* Mel-spectrograms
+		* MFCCs
+
 # Notes on Implementation
 
 ### Feature Extractors
