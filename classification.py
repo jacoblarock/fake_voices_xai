@@ -313,11 +313,12 @@ def train(matched_labels: pd.DataFrame,
             joined = pd.DataFrame([])
             for col in feature_cols:
                 joined[col] = None
+            print("creating batch")
             for line in sample_batch:
                 sample = samples.loc[line, "name"]
                 label = samples.loc[line, "label"]
-                print("\ntrain: ", sample, datetime.now())
-                print("\nlabel: ", label, datetime.now())
+                print("\r", " " * 20, "\r", end="", flush=True)
+                print("adding: ", sample, "label: ", label, datetime.now(), end="", flush=True)
                 new_sample = pd.DataFrame([])
                 for i in range(len(features)):
                     temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
@@ -326,7 +327,7 @@ def train(matched_labels: pd.DataFrame,
                 new_sample["label"] = label
                 new_sample = new_sample.reset_index(drop=True)
                 joined = pd.concat((joined, new_sample))
-            print("\nlen: ", len(joined), datetime.now())
+            print("len: ", len(joined), datetime.now())
             batches = gen_batches(joined.index, batch_size)
             for batch in batches:
                 if len(feature_cols) == 1:
@@ -338,9 +339,11 @@ def train(matched_labels: pd.DataFrame,
                     for feature in feature_cols:
                         temp = joined.loc[batch, feature].to_numpy()
                         temp = np.stack(temp, axis=0)
-                        print("start conversion to tensor", datetime.now())
+                        print("\r", " " * 20, "\r", end="", flush=True)
+                        print("start conversion to tensor", datetime.now(), end="", flush=True)
                         inputs.append(tf.convert_to_tensor(temp))
-                        print("converted to tensor", datetime.now())
+                        print("\r", " " * 20, "\r", end="", flush=True)
+                        print("converted to tensor", datetime.now(), end="", flush=True)
                 labels = tf.convert_to_tensor(joined.loc[batch, "label"])
                 histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
                 if save_as != None:
