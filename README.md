@@ -23,7 +23,9 @@ In this repository, there are several feature extractors that are used to transl
 input for classification models.  
 Included are both perceptible and imperceptible features based on several sources of previous.  
 IF a feature extractor is based on a feature found in the research, it is cited in the comments of the code. Standard features (for example MFCCs) are not cited
-research.
+research.  
+  
+The features used in this repository can be, as in my previous research, classified into perceptible and imperceptible features. Perceptible features are features that are able to be perceived by humans, such as vocal qualities, for example timbre, jitter or pitch fluctuations. Such features are often the reason that fake audio samples often sound somewhat "uncanny" to the ear. Imperceptible features, however, are features that are typically not able to be perceived by humans. These include spectrographic features, such as mel-spectrograms, and spectral coefficients, such as mel-frequency cepstral coefficients or linear frequency cepstral coefficients. Previous research has often concluded that the "problems" in fake audio samples identified using such features are often in very low or high frequency ranges, which can be classified as "speaker independent features" [[1]](#1).
 
 # Datasets
 To download the In-The-Wild Dataset:
@@ -91,3 +93,8 @@ Evaluation is performed akin to training on batched of labelled features. Becaus
 
 ### Note
 I have tried my best to include pydoc where it is relevant.
+
+# References
+<a id="1">[1]</a>
+Xin Liu et al.  
+“Hidden-in-Wave: A Novel Idea to Camouflage AI-Synthesized Voices Based on Speaker-Irrelative Features”. In: 2023 IEEE 34th International Symposium on Software Reliability Engineering (IS-SRE). 2023 IEEE 34th International Symposium on Software Reliability Engineering (ISSRE). Florence, Italy: IEEE, Oct. 9, 2023, pp. 786–794. isbn: 9798350315943. doi: 10 . 1109 / ISSRE59848 . 2023 . 00029. url: https : / / ieeexplore . ieee . org / document / 10301243/ (visited on 05/28/2024).  
