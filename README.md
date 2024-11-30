@@ -74,7 +74,6 @@ There are pickle dumps of trained models in the trained_models directory of this
 		* Mel-spectrograms
 		* MFCCs
 \
-\
 ### Architecture of the ItW_multi_percep_until10000 model
 ![architecture of the ItW_multi_percep_until10000 model](model_plot.png)
 
