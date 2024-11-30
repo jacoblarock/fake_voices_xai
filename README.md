@@ -27,12 +27,12 @@ research.
 The features used in this repository can be, as in my previous research, classified into perceptible and imperceptible features. Perceptible features are features that are able to be perceived by humans, such as vocal qualities, for example timbre, jitter or pitch fluctuations. Such features are often the reason that fake audio samples often sound somewhat "uncanny" to the ear. Imperceptible features, however, are features that are typically not able to be perceived by humans. These include spectrographic features, such as mel-spectrograms, and spectral coefficients, such as mel-frequency cepstral coefficients or linear frequency cepstral coefficients. Previous research has often concluded that the "problems" in fake audio samples identified using such features are often in very low or high frequency ranges, which can be classified as "speaker independent features" [[1]](#1).
 
 # Datasets
-To download the In-The-Wild Dataset:
+The In-The-Wild Dataset has been primarily used for experiments because of its relative recency and focus on generalization. It can be found here [[6]](#6):
 ```
 https://owncloud.fraunhofer.de/index.php/s/JZgXh0JEAF0elxa/download
 ```
 
-The dataset of ASVSpoof2021 DF can be found here:
+Alternatively, the dataset of ASVSpoof2021 DF can be found here [[7]](#7):
 ```
 https://zenodo.org/records/4835108
 ```
@@ -111,3 +111,9 @@ Menglu Li, Yasaman Ahmadiadli, and Xiao-Ping Zhang.
 <a id="5">[5]</a>
 Zahra Khanjani et al.
 “Learning to Listen and Listening to Learn: Spoofed Audio Detection Through Linguistic Data Augmentation”. In: 2023 IEEE International Conference on Intelligence and Security Informatics (ISI). 2023 IEEE International Conference on Intelligence and Security Informatics (ISI). Charlotte, NC, USA: IEEE, Oct. 2, 2023, pp. 01–06. isbn: 9798350337730. doi: 10.1109/ISI58743.2023.10297267. url: https://ieeexplore.ieee.org/document/10297267/ (visited on 05/28/2024).
+<a id="6">[6]</a>
+Nicolas M. Müller et al.
+Does Audio Deepfake Detection Generalize? Apr. 21, 2022. arXiv: 2203.16263[cs,eess]. url: http://arxiv.org/abs/2203.16263 (visited on 07/04/2024).
+<a id="7">[7]</a>
+Junichi Yamagishi et al.
+“ASVspoof 2021: accelerating progress in spoofed and deepfake speech detection”. In: 2021 Edition of the Automatic Speaker Verification and Spoofing Countermeasures Challenge. 2021 Edition of the Automatic Speaker Verification and Spoofing Countermeasures Challenge. ISCA, Sept. 16, 2021, pp. 47–54. doi: 10 . 21437 / ASVSPOOF . 2021 - 8. url: https://www.isca-archive.org/asvspoof_2021/yamagishi21_asvspoof.html (visited on 07/04/2024).
