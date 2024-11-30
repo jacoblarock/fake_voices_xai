@@ -22,7 +22,7 @@ conda activate fake_voices
 In this repository, there are several feature extractors that are used to translate audio samples into useful 
 input for classification models.  
 Included are both perceptible and imperceptible features based on several sources of previous.  
-IF a feature extractor is based on a feature found in the research, it is cited in the comments of the code. Standard features (for example MFCCs) are not cited
+IF a feature extractor is based on a feature which is novel and specific to certain research or from an article, it is cited in the comments of the code (references below). Standard features that are typical in detection models and not specific to certain research or articles, or features that are built in to existing libraries (for example MFCCs) are not cited.
 research.  
   
 The features used in this repository can be, as in my previous research, classified into perceptible and imperceptible features. Perceptible features are features that are able to be perceived by humans, such as vocal qualities, for example timbre, jitter or pitch fluctuations. Such features are often the reason that fake audio samples often sound somewhat "uncanny" to the ear. Imperceptible features, however, are features that are typically not able to be perceived by humans. These include spectrographic features, such as mel-spectrograms, and spectral coefficients, such as mel-frequency cepstral coefficients or linear frequency cepstral coefficients. Previous research has often concluded that the "problems" in fake audio samples identified using such features are often in very low or high frequency ranges, which can be classified as "speaker independent features" [[1]](#1).
