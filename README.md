@@ -21,7 +21,6 @@ conda activate fake_voices
 
 In this repository, there are several feature extractors that are used to translate audio samples into useful 
 input for classification models.  
-Included are both perceptible and imperceptible features based on several sources of previous.  
 IF a feature extractor is based on a feature which is novel and specific to certain research or from an article, it is cited in the comments of the code (references below). Standard features that are typical in detection models and not specific to certain research or articles, or features that are built in to existing libraries (for example MFCCs) are not cited.
 research.  
   
