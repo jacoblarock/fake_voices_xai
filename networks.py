@@ -7,7 +7,8 @@ def create_cnn_2d(input_shape: Tuple[int, int],
                   n_filters: int,
                   n_layers: int,
                   pooling: bool = True,
-                  output_size: int = -1
+                  output_size: int = -1,
+                  name: str | None = None
                   ) -> models.Sequential:
     """
     creates a 2D cnn with the specified arguments
@@ -21,7 +22,10 @@ def create_cnn_2d(input_shape: Tuple[int, int],
       If the value is -1 (default) there will not be a final dense layer and the size of the previous output will be final
     """
     model = models.Sequential()
-    model.add(layers.Input((input_shape[0], input_shape[1], 1)))
+    if name != None:
+        model.add(layers.Input((input_shape[0], input_shape[1], 1), name="input_" + name))
+    else:
+        model.add(layers.Input((input_shape[0], input_shape[1], 1)))
     model.add(layers.Conv2D(n_filters, (3, 3), activation="relu"))
     for layer in range(n_layers - 1):
         if pooling:
@@ -39,7 +43,8 @@ def create_cnn_1d(input_shape: int,
                   n_filters: int,
                   n_layers: int,
                   pooling: bool = True,
-                  output_size: int = -1
+                  output_size: int = -1,
+                  name: str | None = None
                   ) -> models.Sequential:
     """
     creates a 1D cnn with the specified arguments
@@ -53,7 +58,10 @@ def create_cnn_1d(input_shape: int,
       If the value is -1 (default) there will not be a final dense layer and the size of the previous output will be final
     """
     model = models.Sequential()
-    model.add(layers.Input((input_shape, 1)))
+    if name != None:
+        model.add(layers.Input((input_shape, 1), name="input_" + name))
+    else:
+        model.add(layers.Input((input_shape, 1)))
     model.add(layers.Conv1D(n_filters, 3, activation="relu"))
     for layer in range(n_layers - 1):
         if pooling:
@@ -67,9 +75,12 @@ def create_cnn_1d(input_shape: int,
                   metrics=["accuracy"])
     return model
 
-def single_input():
+def single_input(name: str | None = None):
     model = models.Sequential()
-    model.add(layers.Input((1, 1)))
+    if name != None:
+        model.add(layers.Input((1, 1), name="input_" + name))
+    else:
+        model.add(layers.Input((1, 1)))
     model.add(layers.Flatten())
     model.add(layers.Dense(1))
     model.compile(optimizer="adam",

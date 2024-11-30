@@ -395,21 +395,21 @@ def train(eval_until: int):
     feature_names, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
 
     # create and train the model
-    hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30)
-    mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30)
-    f0_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30)
-    local_jitter_model = networks.single_input()
-    rap_jitter_model = networks.single_input()
-    ppq5_jitter_model = networks.single_input()
-    ppq55_jitter_model = networks.single_input()
-    local_shim_model = networks.single_input()
-    rap_shim_model = networks.single_input()
-    ppq5_shim_model = networks.single_input()
-    ppq55_shim_model = networks.single_input()
+    hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="hnrs")
+    mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel")
+    mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfcc")
+    f0_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="f0_lens")
+    onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="onset_strength")
+    intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="intensity")
+    pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs")
+    local_jitter_model = networks.single_input(name="local_jitter")
+    rap_jitter_model = networks.single_input(name="rap_jitter")
+    ppq5_jitter_model = networks.single_input(name="ppq5_jitter")
+    ppq55_jitter_model = networks.single_input(name="ppq55_jitter")
+    local_shim_model = networks.single_input(name="local_shimmer")
+    rap_shim_model = networks.single_input(name="rap_shimmer")
+    ppq5_shim_model = networks.single_input(name="ppq5_shimmer")
+    ppq55_shim_model = networks.single_input(name="ppq55_shimmer")
     model = networks.stitch_and_terminate([hnr_model,
                                            mel_model,
                                            mfcc_model,
@@ -427,7 +427,7 @@ def train(eval_until: int):
                                            ppq55_shim_model])
     print(model.summary())
     try:
-        utils.plot_model(model, "model_plot.png", show_shapes=True)
+        utils.plot_model(model, "model_plot.png", show_layer_names=True)
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)

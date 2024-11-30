@@ -55,7 +55,7 @@ There are pickle dumps of trained models in the trained_models directory of this
 	- Imperceptible:
 		* Mel-spectrograms
 		* MFCCs
-- ItW_multi_percep_until10000: This model was trained on the first 10000 samples of the In-The-Wild dataset and evaluated on the rest. In evaluation, the model achieves an accuracy of approximately 94,28% with a threshold of 0.5. It was trained using the following features:
+- ItW_multi_percep_until10000: This model was trained on the first 10000 samples of the In-The-Wild dataset and evaluated on the rest. In evaluation, the model achieves an accuracy of approximately 94,28% with a threshold of 0.5. The architecture of this model is pictured below. It was trained using the following features:
 	- Perceptible:
 		* Harmonic-noise ratios
 		* Fundamental frequency lengths
@@ -73,6 +73,7 @@ There are pickle dumps of trained models in the trained_models directory of this
 	- Imperceptible:
 		* Mel-spectrograms
 		* MFCCs
+[architecture of the ItW_multi_percep_until10000 model](model_plot.png)
 
 # Notes on Implementation
 
