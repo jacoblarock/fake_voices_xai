@@ -37,7 +37,7 @@ def accuracy(data: list | dict, threshold: float) -> float:
     raise TypeError("data must be of type list or dict, a result of the evaluate method")
 
 # function to minimize for calculation of EER
-def _error_rate(x: float, data: list):
+def _error_rate(x: float, data: list) -> float:
     total = len(data)
     misses = 0
     for res in data:
@@ -46,12 +46,18 @@ def _error_rate(x: float, data: list):
             misses += 1
     return misses / total
 
-def eer(data: list):
+def eer(data: list) -> dict:
     """
     Calculate the EER based on unsummarized results adjusting the threshold to minimize the error
     rate and returning the minimized error rate and corresponding threshold
     """
     if type(data) != list:
         raise TypeError("data must be of type list, an unsummarized result of the evaluate method")
-    threshold = minimize(_error_rate, 0.5, (data)).x
+    res = minimize(_error_rate, 0.5, (data), method="Nelder-Mead")
+    threshold = res.x
     return {"eer": _error_rate(threshold, data), "threshold": threshold}
+
+if __name__ == "__main__":
+    results = load_results("./trained_models/ItW_multi_percep_until10000_results.txt")
+    eer = eer(results)
+    print(eer)
