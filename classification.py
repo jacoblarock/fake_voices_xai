@@ -471,7 +471,7 @@ def evaluate(labels: pd.DataFrame,
         if summary_method == "median":
             summary_func = np.median
         result = summary_func(res_arr)
-        results.append(result)
+        results.append({"result": result, "label": label})
         result = 0 if result < threshold else 1
         if label == 0:
             if result == 0:

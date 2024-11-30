@@ -364,7 +364,7 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
     print(summary)
     with open("cache/results.txt", "w") as file:
         file.write(str(results))
-    with open("cache/results-summary.txt", "w") as file:
+    with open("cache/results_summary.txt", "w") as file:
         file.write(str(summary))
 
 def train(eval_until: int):
