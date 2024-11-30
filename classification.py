@@ -76,7 +76,7 @@ def match_labels(labels: pd.DataFrame,
                 pickle.dump(extracted_features, file)
     return extracted_features.rename(columns={"feature": name})
 
-def morph(arr: np.ndarray, vsize: int) -> np.ndarray:
+def _morph(arr: np.ndarray, vsize: int) -> np.ndarray:
     """
     MEANT FOR INTERNAL USE
     Expand a one dimensional array into two dimensions
@@ -117,7 +117,7 @@ def join_features(matched_labels: pd.DataFrame,
     matched_labels = matched_labels.rename(columns={"feature": feature_name})
     return matched_labels
 
-def feature_concat(row):
+def _feature_concat(row):
     """
     MEANT FOR INTERNAL USE
     Use the data_container class to concat two extracted feature arrays into one
@@ -154,9 +154,9 @@ def merge(matched_labels: pd.DataFrame,
         if len(feature["feature"][0].shape) > 1:
             vsize_feature = feature["feature"][0].shape[1]
         if vsize_matched_labels == 1 and vsize_feature != 1:
-            matched_labels["feature"] = matched_labels["feature"].apply(morph, args=(vsize_feature,))
+            matched_labels["feature"] = matched_labels["feature"].apply(_morph, args=(vsize_feature,))
         if vsize_matched_labels != 1 and vsize_feature == 1:
-            feature["feature"] = feature["feature"].apply(morph, args=(vsize_matched_labels,))
+            feature["feature"] = feature["feature"].apply(_morph, args=(vsize_matched_labels,))
         # perform join and filter
         matched_labels = matched_labels.join(feature.set_index(["sample"]), on=["sample"], how="inner", rsuffix=".temp")
         matched_labels = matched_labels.reset_index(drop=True)
@@ -166,7 +166,7 @@ def merge(matched_labels: pd.DataFrame,
         # matched_labels["2"] = matched_labels["2"].apply(data_container.make_container)
         matched_labels["feature"] = mt_operations.apply(matched_labels["feature"], data_container.make_container)
         print("containers made", str(datetime.now()))
-        matched_labels["feature", "feature.temp"] = mt_operations.apply(matched_labels["feature", "feature.temp"], feature_concat)
+        matched_labels["feature", "feature.temp"] = mt_operations.apply(matched_labels["feature", "feature.temp"], _feature_concat)
         print("concatted", str(datetime.now()))
         # for i in range(len(matched_labels)):
         #     a = matched_labels.loc[i, "2"].get_underlying()
