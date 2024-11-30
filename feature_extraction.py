@@ -142,8 +142,9 @@ def gen_mfcc(samples: np.ndarray, sample_rate: int | float, count: int) -> np.nd
 def get_f0_lens(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     f0 = lr.yin(samples, fmin=universal_fmin, fmax=universal_fmax)
     return 1 / f0
-
-# Perceptible features from Chaiwongyen et al, 2023:
+# -----
+# Perceptible features using Chaiwongyen et al, 2023 [2] and Chaiwongyen et al, 2022 [3]:
+# -----
 # Jitter compared to next neighbor sample
 def get_local_jitter(samples: np.ndarray, sample_rate: int | float) -> float:
     f0_lens = get_f0_lens(samples, sample_rate)
@@ -197,11 +198,11 @@ def get_shim_apqx(samples: np.ndarray, sample_rate: int | float, count: int) -> 
         difsum += np.abs(samples[i] - np.average(samples[i-m:i+m+1]))
     return ((1 / (N - 1)) * difsum) / ((1 / N) * sum(np.abs(samples))) * 100
 
-# TODO: Further harmonic features from Chaiwongyen et al, 2023 / Li et al, 2022
+# TODO: Further harmonic features from Chaiwongyen et al, 2023 [2] / Li et al, 2022 [4]:
 
 # Harmonic Noise Ratio (HNR)
 # log of harmonic power divided by the residual of subtracting harmonic power from the total power (noise)
-# per Chaiwongyen et al, 2022/2023 and Li et al, 2022
+# per Chaiwongyen et al, 2022/2023 [2,3] and Li et al, 2022 [4]
 def get_hnrs(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     harmonics, magnitudes = lr.core.piptrack(y=samples, sr=sample_rate, fmin=universal_fmin, fmax=universal_fmax)
     harmonic_powers = np.sum(magnitudes, axis=0)
@@ -231,7 +232,7 @@ def get_intensity(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
 def gen_chromagram(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:
     return lr.feature.chroma_stft(y=samples, sr=sample_rate, n_fft=12, hop_length=160)
 
-# Estimation of socio-linguistic features from Khanjani et al, 2023
+# Estimation of socio-linguistic features from Khanjani et al, 2023 [5]
 
 # Estimate pitches based on the maximum power harmonics
 def get_pitches(samples: np.ndarray, sample_rate: int | float) -> np.ndarray:

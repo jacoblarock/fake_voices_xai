@@ -98,3 +98,15 @@ I have tried my best to include pydoc where it is relevant.
 <a id="1">[1]</a>
 Xin Liu et al.  
 “Hidden-in-Wave: A Novel Idea to Camouflage AI-Synthesized Voices Based on Speaker-Irrelative Features”. In: 2023 IEEE 34th International Symposium on Software Reliability Engineering (IS-SRE). 2023 IEEE 34th International Symposium on Software Reliability Engineering (ISSRE). Florence, Italy: IEEE, Oct. 9, 2023, pp. 786–794. isbn: 9798350315943. doi: 10 . 1109 / ISSRE59848 . 2023 . 00029. url: https : / / ieeexplore . ieee . org / document / 10301243/ (visited on 05/28/2024).  
+<a id="2">[2]</a>
+Anuwat Chaiwongyen et al.  
+“Deepfake-speech Detection with Pathological Features and Multilayer Perceptron Neural Network”. In: 2023 Asia Pacific Signal and Information Processing Association Annual Summit and Conference (APSIPA ASC). 2023 Asia Pacific Signal and Information Processing Association Annual Summit and Conference (APSIPA ASC). Taipei, Taiwan: IEEE, Oct. 31, 2023, pp. 2182–2188. isbn: 9798350300673. doi: 10 . 1109 / APSIPAASC58517 . 2023 . 10317331. url: https://ieeexplore.ieee.org/document/10317331/ (visited on 05/28/2024).  
+<a id="3">[3]</a>
+Anuwat Chaiwongyen et al.  
+“Contribution of Timbre and Shimmer Features to Deepfake Speech Detection”. In: 2022 Asia-Pacific Signal and Information Processing Association Annual Summit and Conference (AP-SIPA ASC). 2022 Asia Pacific Signal and Information Processing Association Annual Summit and Conference (APSIPA ASC). Chiang Mai, Thailand: IEEE, Nov. 7, 2022, pp. 97–103. isbn: 978-616-590-477-3. doi: 10.23919/APSIPAASC55919.2022.9980281. url: https://ieeexplore.ieee.org/document/9980281/ (visited on 05/28/2024).  
+<a id="4">[4]</a>
+Menglu Li, Yasaman Ahmadiadli, and Xiao-Ping Zhang.
+“A Comparative Study on Physical and Perceptual Features for Deepfake Audio Detection”. In: Proceedings of the 1st International Workshop on Deepfake Detection for Audio Multimedia. MM ’22: The 30th ACM International Conference on Multimedia. Lisboa Portugal: ACM, Oct. 14, 2022, pp. 35–41. isbn: 978-1-4503-9496-3. doi: 10.1145/3552466.3556523. url: https://dl.acm.org/doi/10.1145/3552466.3556523 (visited on 05/11/2024).
+<a id="5">[5]</a>
+Zahra Khanjani et al.
+“Learning to Listen and Listening to Learn: Spoofed Audio Detection Through Linguistic Data Augmentation”. In: 2023 IEEE International Conference on Intelligence and Security Informatics (ISI). 2023 IEEE International Conference on Intelligence and Security Informatics (ISI). Charlotte, NC, USA: IEEE, Oct. 2, 2023, pp. 01–06. isbn: 9798350337730. doi: 10.1109/ISI58743.2023.10297267. url: https://ieeexplore.ieee.org/document/10297267/ (visited on 05/28/2024).
