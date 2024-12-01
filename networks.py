@@ -1,7 +1,9 @@
 from numpy import concatenate
 import tensorflow as tf
 from keras._tf_keras.keras import models, layers, losses, utils, Model
+from tensorflow import convert_to_tensor
 from typing import Tuple
+import numpy as np
 import pickle
 
 def create_cnn_2d(input_shape: Tuple[int, int],
@@ -106,7 +108,6 @@ def single_input(name: str | None = None):
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
-    print(model.summary())
     return model
 
 def stitch_and_terminate(model_list: list[models.Sequential],
@@ -131,41 +132,37 @@ def stitch_and_terminate(model_list: list[models.Sequential],
                   metrics=["accuracy"])
     return model
 
+def decompose(model: models.Model) -> dict[str, models.Model]:
+    names = []
+    out = {}
+    for layer in model.layers:
+        if layer.name[0:5] == "input":
+            names.append(layer.name[6:])
+    for name in names:
+        inputs = model.inputs
+        outputs = model.get_layer("out_" + name).output
+        out[name] = Model(inputs=inputs, outputs=outputs)
+    return out
+
 if __name__ == "__main__":
     model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
-    print(model.summary())
-    model_renames = {"input_layer_1": "input_mel",
-                     "input_layer": "input_hnrs",
-                     "input_layer_2": "input_mfcc",
-                     "input_layer_3": "input_f0_lens",
-                     "input_layer_4": "input_onset_strength",
-                     "input_layer_5": "input_intensity",
-                     "input_layer_6": "input_pitch_flucs",
-                     "input_layer_7": "input_local_jitter",
-                     "input_layer_8": "input_rap_jitter",
-                     "input_layer_9": "input_ppq5_jitter",
-                     "input_layer_10": "input_ppq55_jitter",
-                     "input_layer_11": "input_local_shimmer",
-                     "input_layer_12": "input_rap_shimmer",
-                     "input_layer_13": "input_ppq5_shimmer",
-                     "input_layer_14": "input_ppq55_shimmer",
-                     "dense_1": "out_mel",
-                     "dense": "out_hnrs",
-                     "dense_2": "out_mfcc",
-                     "dense_3": "out_f0_lens",
-                     "dense_4": "out_onset_strength",
-                     "dense_5": "out_intensity",
-                     "dense_6": "out_pitch_flucs",
-                     "dense_7": "out_local_jitter",
-                     "dense_8": "out_rap_jitter",
-                     "dense_9": "out_ppq5_jitter",
-                     "dense_10": "out_ppq55_jitter",
-                     "dense_11": "out_local_shimmer",
-                     "dense_12": "out_rap_shimmer",
-                     "dense_13": "out_ppq5_shimmer",
-                     "dense_14": "out_ppq55_shimmer"}
-    for name in model_renames:
-        model.get_layer(name).name = model_renames[name]
-    print(model.summary())
-    utils.plot_model(model, "./cache/model.png", show_layer_names=True)
-    pickle.dump(model, open("./trained_models/ItW_multi_percep_until10000", "wb"))
+    dec_models = decompose(model)
+    print(dec_models["mel"].summary())
+    in_2d = np.random.rand(30, 30, 1)
+    in_1d = np.random.rand(30, 1)
+    in_single = np.random.rand(1, 1)
+    res = dec_models["mel"]([in_1d,
+                             in_2d,
+                             in_2d,
+                             in_1d,
+                             in_1d,
+                             in_1d,
+                             in_1d,
+                             in_single,
+                             in_single,
+                             in_single,
+                             in_single,
+                             in_single,
+                             in_single,
+                             in_single,
+                             in_single])

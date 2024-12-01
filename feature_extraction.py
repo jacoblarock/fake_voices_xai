@@ -31,6 +31,7 @@ def check_cache() -> int:
                    "./cache/extracted_features",
                    "./cache/matched_labels"
                    "./cache/mt_ops"
+                   "./models"
                    ]
     complete = 1
     for path in cache_paths:

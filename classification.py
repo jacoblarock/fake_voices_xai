@@ -487,7 +487,4 @@ def evaluate(labels: pd.DataFrame,
     return results, summary
 
 if __name__ == "__main__":
-    a = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4], [5, 5, 5], [6, 6, 6]])
-    b = pd.DataFrame([[1, 1, 1], [2, 2, 2], [3, 3, 3]])
-    c = pd.DataFrame([])
-    print(additive_merge(a, c))
+    pass

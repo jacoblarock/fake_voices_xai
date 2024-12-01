@@ -432,14 +432,14 @@ def train(eval_until: int):
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="test_multi_percep281124")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="test_multi_percep")
     for history in histories:
         print(history)
 
 def classify_test(model: str | classification.networks.models.Sequential, filename: str):
 
-    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac"
-    dataset_ext = "flac"
+    dataset_dir = "./datasets/release_in_the_wild"
+    dataset_ext = "wav"
 
     # load model if a path is provided
     if type(model) == str:
@@ -495,6 +495,5 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    # train(10000)
-    # eval("models/test_multi_percep281124", 10000)
-    eval("./trained_models/ItW_multi_percep_until10000", 10000)
+    train(10000)
+    eval("models/test_multi_percep", 10000)
