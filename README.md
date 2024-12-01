@@ -38,9 +38,9 @@ https://zenodo.org/records/4835108
 ```
 Datasets can be put in the `datasets` directory, which is in the .gitignore file.
 
-# Models (traditional)
-There are pickle dumps of trained models in the trained_models directory of this repository that can be used for evaluation or surrogate purposes. The file names are a summary of the features involved and the training.
-- ItW_hnrs_melspec_mfcc_f0len: This model was trained with the following features on the entire In-The-Wild dataset:
+# Models
+There are pickle dumps of trained models in the trained_models directory of this repository that can be used for evaluation or surrogate purposes. The file names are a summary of the features involved and the training. Summaries of the models in the directory are given below.
+- ItW_hnrs_melspec_mfcc_f0len: This model was created only for testing purposes and was trained with the following features on the entire In-The-Wild dataset:
 	* Harmonic-noise ratios
 	* Mel-spectrograms
 	* MFCCs
