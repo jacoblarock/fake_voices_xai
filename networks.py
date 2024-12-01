@@ -1,7 +1,8 @@
 from numpy import concatenate
 import tensorflow as tf
-from keras._tf_keras.keras import models, layers, losses
+from keras._tf_keras.keras import models, layers, losses, utils, Model
 from typing import Tuple
+import pickle
 
 def create_cnn_2d(input_shape: Tuple[int, int],
                   n_filters: int,
@@ -31,9 +32,17 @@ def create_cnn_2d(input_shape: Tuple[int, int],
         if pooling:
             model.add(layers.MaxPooling2D((2, 2)))
         model.add(layers.Conv2D(n_filters, (3, 3), activation="relu"))
-    model.add(layers.Flatten())
     if output_size > 0:
-        model.add(layers.Dense(output_size))
+        model.add(layers.Flatten())
+        if name != None:
+            model.add(layers.Dense(output_size, name="out_" + name))
+        else:
+            model.add(layers.Dense(output_size))
+    else:
+        if name != None:
+            model.add(layers.Flatten(name="out_" + name))
+        else:
+            model.add(layers.Flatten())
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
@@ -67,9 +76,17 @@ def create_cnn_1d(input_shape: int,
         if pooling:
             model.add(layers.MaxPooling1D(2))
         model.add(layers.Conv1D(n_filters, 3, activation="relu"))
-    model.add(layers.Flatten())
     if output_size > 0:
-        model.add(layers.Dense(output_size))
+        model.add(layers.Flatten())
+        if name != None:
+            model.add(layers.Dense(output_size, name="out_" + name))
+        else:
+            model.add(layers.Dense(output_size))
+    else:
+        if name != None:
+            model.add(layers.Flatten(name="out_" + name))
+        else:
+            model.add(layers.Flatten())
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
@@ -82,7 +99,10 @@ def single_input(name: str | None = None):
     else:
         model.add(layers.Input((1, 1)))
     model.add(layers.Flatten())
-    model.add(layers.Dense(1))
+    if name != None:
+        model.add(layers.Dense(1, name="out_" + name))
+    else:
+        model.add(layers.Dense(1))
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
@@ -112,8 +132,40 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     return model
 
 if __name__ == "__main__":
-    # model = create_cnn_1d(10, 32, 2)
-    part0 = create_cnn_2d((10, 10), 32, 2)
-    part1 = create_cnn_2d((10, 10), 32, 2)
-    model = stitch_and_terminate([part0, part1])
+    model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
     print(model.summary())
+    model_renames = {"input_layer_1": "input_mel",
+                     "input_layer": "input_hnrs",
+                     "input_layer_2": "input_mfcc",
+                     "input_layer_3": "input_f0_lens",
+                     "input_layer_4": "input_onset_strength",
+                     "input_layer_5": "input_intensity",
+                     "input_layer_6": "input_pitch_flucs",
+                     "input_layer_7": "input_local_jitter",
+                     "input_layer_8": "input_rap_jitter",
+                     "input_layer_9": "input_ppq5_jitter",
+                     "input_layer_10": "input_ppq55_jitter",
+                     "input_layer_11": "input_local_shimmer",
+                     "input_layer_12": "input_rap_shimmer",
+                     "input_layer_13": "input_ppq5_shimmer",
+                     "input_layer_14": "input_ppq55_shimmer",
+                     "dense_1": "out_mel",
+                     "dense": "out_hnrs",
+                     "dense_2": "out_mfcc",
+                     "dense_3": "out_f0_lens",
+                     "dense_4": "out_onset_strength",
+                     "dense_5": "out_intensity",
+                     "dense_6": "out_pitch_flucs",
+                     "dense_7": "out_local_jitter",
+                     "dense_8": "out_rap_jitter",
+                     "dense_9": "out_ppq5_jitter",
+                     "dense_10": "out_ppq55_jitter",
+                     "dense_11": "out_local_shimmer",
+                     "dense_12": "out_rap_shimmer",
+                     "dense_13": "out_ppq5_shimmer",
+                     "dense_14": "out_ppq55_shimmer"}
+    for name in model_renames:
+        model.get_layer(name).name = model_renames[name]
+    print(model.summary())
+    utils.plot_model(model, "./cache/model.png", show_layer_names=True)
+    pickle.dump(model, open("./trained_models/ItW_multi_percep_until10000", "wb"))
