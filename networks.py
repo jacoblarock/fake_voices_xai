@@ -142,27 +142,34 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
         inputs = model.inputs
         outputs = model.get_layer("out_" + name).output
         out[name] = Model(inputs=inputs, outputs=outputs)
+    try:
+        inputs = model.get_layers("concatenate").input
+        outputs = model.get_layers("dense").output
+        out["terminus"] = Model(inputs=inputs, outputs=outputs)
+    except:
+        pass
     return out
 
 if __name__ == "__main__":
     model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
     dec_models = decompose(model)
     print(dec_models["mel"].summary())
-    in_2d = np.random.rand(30, 30, 1)
-    in_1d = np.random.rand(30, 1)
+    in_2d = np.random.rand(1, 30, 30)
+    in_1d = np.random.rand(1, 30)
     in_single = np.random.rand(1, 1)
-    res = dec_models["mel"]([in_1d,
-                             in_2d,
-                             in_2d,
-                             in_1d,
-                             in_1d,
-                             in_1d,
-                             in_1d,
-                             in_single,
-                             in_single,
-                             in_single,
-                             in_single,
-                             in_single,
-                             in_single,
-                             in_single,
-                             in_single])
+    res = dec_models["mel"].predict([in_1d,
+                                     in_2d,
+                                     in_2d,
+                                     in_1d,
+                                     in_1d,
+                                     in_1d,
+                                     in_1d,
+                                     in_single,
+                                     in_single,
+                                     in_single,
+                                     in_single,
+                                     in_single,
+                                     in_single,
+                                     in_single,
+                                     in_single])
+    print(res)
