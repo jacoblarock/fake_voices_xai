@@ -2,6 +2,7 @@ import feature_extraction
 import classification
 import networks
 import mt_operations
+import explainers
 import metrics
 import matplotlib.pyplot as plt
 from typing import Tuple
@@ -491,9 +492,27 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
     median = np.median(results)
     return (avg, median)
 
+def explainer_test(model):
+    dataset_dir = "./datasets/release_in_the_wild/"
+    dataset_ext = "wav"
+    extraction_kwargs={"cache": False,
+            "use_cached": False,
+            "window_length": 30,
+            "window_height": 30
+            }
+
+    feature_cols, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
+
+    if type(model) == str:
+        model = pickle.load(open(model, "rb"))
+    print(model.summary())
+
+    explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
+
 if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(10000)
-    eval("models/test_multi_percep", 10000)
+    # train(10000)
+    # eval("models/test_multi_percep", 10000)
+    explainer_test("./trained_models/ItW_multi_percep_until10000")

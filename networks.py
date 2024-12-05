@@ -139,37 +139,36 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
         if layer.name[0:5] == "input":
             names.append(layer.name[6:])
     for name in names:
-        inputs = model.inputs
+        inputs = model.get_layer("input_" + name).output
         outputs = model.get_layer("out_" + name).output
         out[name] = Model(inputs=inputs, outputs=outputs)
     try:
-        inputs = model.get_layers("concatenate").input
-        outputs = model.get_layers("dense").output
+        inputs = model.get_layer("concatenate").input
+        outputs = model.get_layer("dense").output
         out["terminus"] = Model(inputs=inputs, outputs=outputs)
-    except:
-        pass
+    except Exception as e:
+        print(e)
     return out
 
 if __name__ == "__main__":
     model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
-    dec_models = decompose(model)
-    print(dec_models["mel"].summary())
-    in_2d = np.random.rand(1, 30, 30)
-    in_1d = np.random.rand(1, 30)
-    in_single = np.random.rand(1, 1)
-    res = dec_models["mel"].predict([in_1d,
-                                     in_2d,
-                                     in_2d,
-                                     in_1d,
-                                     in_1d,
-                                     in_1d,
-                                     in_1d,
-                                     in_single,
-                                     in_single,
-                                     in_single,
-                                     in_single,
-                                     in_single,
-                                     in_single,
-                                     in_single,
-                                     in_single])
-    print(res)
+    print(model.summary())
+    model_renames = {"input_mel": "input_mel_spec",
+                     "input_mfcc": "input_mfccs",
+                     "input_local_shimmer": "input_local_shim",
+                     "input_rap_shimmer": "input_rap_shim",
+                     "input_ppq5_shimmer": "input_ppq5_shim",
+                     "input_ppq55_shimmer": "input_ppq55_shim",
+                     "out_mel": "out_mel_spec",
+                     "out_mfcc": "out_mfccs",
+                     "out_local_shimmer": "out_local_shim",
+                     "out_rap_shimmer": "out_rap_shim",
+                     "out_ppq5_shimmer": "out_ppq5_shim",
+                     "out_ppq55_shimmer": "out_ppq55_shim",
+                     "dense_15": "dense"
+                     }
+    for name in model_renames:
+        model.get_layer(name).name = model_renames[name]
+    print(model.summary())
+    utils.plot_model(model, "./cache/model.png", show_layer_names=True)
+    pickle.dump(model, open("./trained_models/ItW_multi_percep_until10000", "wb"))
