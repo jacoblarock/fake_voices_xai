@@ -209,8 +209,8 @@ def gen_batches(indices: pd.Index, batch_size: int) -> list[pd.Index]:
         batches.append(indices[-(len(indices) % batch_size):])
     return batches
 
-def additive_merge(a: pd.DataFrame,
-                   b: pd.DataFrame,
+def additive_merge(a: pd.DataFrame | pd.Series,
+                   b: pd.DataFrame | pd.Series,
                    ) -> pd.DataFrame:
     """
     Joins two arbitrary dataframes by merging them additively
@@ -225,7 +225,7 @@ def additive_merge(a: pd.DataFrame,
         b, a = a, b
         b_len, a_len = a_len, b_len
     if b_len == 0:
-        return a
+        return pd.DataFrame(a)
     diff = a_len - b_len
     # if the difference is greater than the length of b, concat b with itself
     while diff >= b_len:

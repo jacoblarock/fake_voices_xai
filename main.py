@@ -301,7 +301,6 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("ppq55_shim extracted", datetime.now())
     print("shape", ppq55_shim.shape)
     print("max x:", max(ppq55_shim["x"]))
-    print(local_jitter["feature"])
 
     return (["hnrs",
              "mel_spec",
@@ -505,9 +504,12 @@ def explainer_test(model):
 
     if type(model) == str:
         model = pickle.load(open(model, "rb"))
-    print(model.summary())
 
-    explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
+    inter_data = explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
+    inter_data = explainers.inter_data_concat(inter_data)
+    print("train data concatted", classification.datetime.now())
+    exp = explainers.explain(model, features, feature_cols, inter_data)
+    print(exp.as_list())
 
 if __name__ == "__main__":
     """
