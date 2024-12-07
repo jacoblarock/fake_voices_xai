@@ -66,7 +66,6 @@ def explain(model: Model,
             feature_cols: list[str],
             training_data: np.ndarray
             ) -> lt.explanation.Explanation:
-    prediction = classification.classify(model, features, feature_cols)
     explainer = lt.LimeTabularExplainer(training_data=training_data,
                                         mode="classification")
     out = explainer.explain_instance(data_row=np.array([rand(-100, 100) for x in range(218)]),
