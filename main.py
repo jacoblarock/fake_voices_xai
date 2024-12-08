@@ -504,6 +504,7 @@ def explainer_test(model):
 
     if type(model) == str:
         model = pickle.load(open(model, "rb"))
+    print(model.summary())
 
     inter_data = explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
     inter_data = explainers.inter_data_concat(inter_data)
