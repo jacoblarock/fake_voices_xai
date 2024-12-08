@@ -68,6 +68,7 @@ def explain(model: Model,
             ) -> lt.explanation.Explanation:
     explainer = lt.LimeTabularExplainer(training_data=training_data,
                                         mode="classification")
+    terminus = networks.decompose(model)["terminus"]
     out = explainer.explain_instance(data_row=np.array([rand(-100, 100) for x in range(218)]),
-                                     predict_fn=model.predict)
+                                     predict_fn=terminus.predict)
     return out

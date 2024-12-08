@@ -507,9 +507,11 @@ def explainer_test(model):
     print(model.summary())
 
     inter_data = explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
+    del features
     inter_data = explainers.inter_data_concat(inter_data)
     print("train data concatted", classification.datetime.now())
-    exp = explainers.explain(model, features, feature_cols, inter_data)
+    exp = explainers.explain(model, [], feature_cols, inter_data)
+    input("press enter to continue")
     print(exp.as_list())
 
 if __name__ == "__main__":
