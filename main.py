@@ -501,18 +501,19 @@ def explainer_test(model):
             }
 
     feature_cols, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
+    labels = classification.get_labels("./datasets/release_in_the_wild/meta.csv", "file", "label", "spoof", "bona-fide")
 
     if type(model) == str:
         model = pickle.load(open(model, "rb"))
     print(model.summary())
 
     inter_data = explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
-    del features
-    inter_data = explainers.inter_data_concat(inter_data)
-    print("train data concatted", classification.datetime.now())
-    exp = explainers.explain(model, [], feature_cols, inter_data)
+    train_subset, labels_subset = explainers.prep_train_data_sample(inter_data, features, feature_cols, labels, 100)
+    print(train_subset)
+    print(labels_subset)
+    # exp = explainers.explain(model, [], feature_cols, inter_data)
     input("press enter to continue")
-    print(exp.as_list())
+    # print(exp.as_list())
 
 if __name__ == "__main__":
     """
