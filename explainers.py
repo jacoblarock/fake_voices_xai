@@ -169,7 +169,6 @@ def explain(model: Model,
     feature_sizes = {}
     for m_name in dec_model:
         feature_sizes[m_name] = dec_model[m_name].output_shape[1]
-    print(feature_sizes)
     del dec_model["terminus"]
     inter_data = gen_intermediate_train_data(model,
                                              features,

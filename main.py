@@ -12,6 +12,8 @@ from keras._tf_keras.keras import utils
 import numpy as np
 import pickle
 import os
+import warnings
+warnings.filterwarnings("ignore")
 print("dependencies loaded")
 
 def plot_1d(data_arr):
@@ -507,18 +509,22 @@ def explainer_test(model):
         model = pickle.load(open(model, "rb"))
     print(model.summary())
 
-    sample_features = explainers.isolate_sample(features, "1.wav")
     # sample_inter_data = explainers.gen_intermediate_train_data(model,
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
+    log = open("cache/exp_log.txt", "w")
     e = explainers.make_explainer(labels, model, features, feature_cols, 1000000, 1000, cache_name="e1000")
-    out = explainers.explain(model,
-                             e,
-                             sample_features,
-                             feature_cols,
-                             1000000)
-    print(out)
+    for x in range(30000):
+        sample_features = explainers.isolate_sample(features, f"{x}.wav")
+        out = explainers.explain(model,
+                                 e,
+                                 sample_features,
+                                 feature_cols,
+                                 1000000)
+        print(out)
+        with open("cache/exp_log.txt", "a") as logfile:
+            logfile.write(str(out) + "\n")
     # while True:
     #     exp = explainers.explain(model, e, [], [])
     #     print(explainers.format_explanation(exp))
