@@ -507,13 +507,23 @@ def explainer_test(model):
         model = pickle.load(open(model, "rb"))
     print(model.summary())
 
-    inter_data = explainers.gen_intermediate_train_data(model, features, feature_cols, 1000000)
-    train_subset, labels_subset = explainers.prep_train_data_sample(inter_data, features, feature_cols, labels, 100)
-    print(train_subset)
-    print(labels_subset)
-    # exp = explainers.explain(model, [], feature_cols, inter_data)
-    input("press enter to continue")
-    # print(exp.as_list())
+    sample_features = explainers.isolate_sample(features, "1.wav")
+    # sample_inter_data = explainers.gen_intermediate_train_data(model,
+    #                                                            sample_features,
+    #                                                            feature_cols,
+    #                                                            1000000)
+    e = explainers.make_explainer(labels, model, features, feature_cols, 1000000, 1000, cache_name="e1000")
+    out = explainers.explain(model,
+                             e,
+                             sample_features,
+                             feature_cols,
+                             1000000)
+    print(out)
+    # while True:
+    #     exp = explainers.explain(model, e, [], [])
+    #     print(explainers.format_explanation(exp))
+    #     exp.save_to_file("explanation.html")
+    #     input("enter to continue")
 
 if __name__ == "__main__":
     """

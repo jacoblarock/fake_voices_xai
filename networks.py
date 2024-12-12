@@ -143,7 +143,7 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
         outputs = model.get_layer("out_" + name).output
         out[name] = Model(inputs=inputs, outputs=outputs)
     try:
-        inputs = model.get_layer("flatten_15").input
+        inputs = model.get_layer("dense").input
         outputs = model.get_layer("dense").output
         out["terminus"] = Model(inputs=inputs, outputs=outputs)
     except Exception as e:

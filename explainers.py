@@ -1,7 +1,11 @@
 import networks
 import classification
+from feature_extraction import check_cache
+from dataclasses import dataclass
+import pickle
+import os
 from datetime import datetime
-from keras._tf_keras.keras import models, layers, Model
+from keras._tf_keras.keras import Model
 import pandas as pd
 import numpy as np
 import lime.lime_tabular as lt
@@ -15,8 +19,6 @@ def gen_intermediate_train_data(model,
                                 ) -> dict[str, pd.Series]:
     out = {}
     dec_model = networks.decompose(model)
-    for sub_model in dec_model:
-        print(sub_model)
     # remove the terminus model
     if "terminus" in dec_model.keys():
         del dec_model["terminus"]
@@ -92,6 +94,39 @@ def prep_train_data_sample(inter_data: dict[str, pd.Series],
         joined.drop(columns=[name])
     return inter_data_concat(joined_features_map), out_labels
 
+def make_explainer(labels: pd.DataFrame,
+                   model,
+                   features: list[pd.DataFrame],
+                   feature_names: list[str],
+                   batch_size: int,
+                   subset_size: int,
+                   cache: bool = True,
+                   use_cached: bool = True,
+                   cache_name: str = "explainer"
+                   ) -> lt.LimeTabularExplainer:
+    if use_cached and os.path.isfile("cache/explainers/" + cache_name):
+        check_cache()
+        train_subset, labels_subset = pickle.load(open("cache/explainers/" + cache_name, "rb"))
+    else:
+        inter_data = gen_intermediate_train_data(model,
+                                                 features,
+                                                 feature_names,
+                                                 batch_size)
+        train_subset, labels_subset = prep_train_data_sample(inter_data,
+                                                             features,
+                                                             feature_names,
+                                                             labels,
+                                                             subset_size)
+    explainer = lt.LimeTabularExplainer(training_data=train_subset,
+                                        training_labels=labels_subset,
+                                        feature_names=["|" + str(i) + "|" for i in range(218)],
+                                        mode="regression")
+    if cache:
+        check_cache()
+        pickle.dump((train_subset, labels_subset),
+                    open("cache/explainers/" + cache_name, "wb"))
+    return explainer
+
 def explain_single_feature(model_slice: Model,
                            train_feature: pd.DataFrame,
                            samples: pd.Series):
@@ -103,15 +138,70 @@ def explain_single_feature(model_slice: Model,
     explainer = lt.LimeTabularExplainer(x)
     explanations = []
 
+def isolate_sample(features: list[pd.DataFrame],
+                   sample: str
+                   ) -> list[pd.DataFrame]:
+    out = []
+    for i in range(len(features)):
+        out.append(features[i].loc[features[i]["sample"] == sample])
+    return out
+
+def format_explanation(explanation: lt.explanation.Explanation
+                       ) -> dict[int, float]:
+    out = {}
+    exp_list = explanation.as_list()
+    for val in exp_list:
+        feature = int(val[0].split("|")[1])
+        result = val[1]
+        out[feature] = result
+    return out
 
 def explain(model: Model,
+            explainer: lt.LimeTabularExplainer,
             features: list[pd.DataFrame],
-            feature_cols: list[str],
-            training_data: np.ndarray
-            ) -> lt.explanation.Explanation:
-    explainer = lt.LimeTabularExplainer(training_data=training_data,
-                                        mode="classification")
-    terminus = networks.decompose(model)["terminus"]
-    out = explainer.explain_instance(data_row=np.array([rand(-100, 100) for x in range(218)]),
-                                     predict_fn=terminus.predict)
-    return out
+            feature_names: list[str],
+            batch_size: int
+            ) -> dict[int, float]:
+    out = {}
+    summary = {}
+    dec_model = networks.decompose(model)
+    terminus = dec_model["terminus"]
+    feature_sizes = {}
+    for m_name in dec_model:
+        feature_sizes[m_name] = dec_model[m_name].output_shape[1]
+    print(feature_sizes)
+    del dec_model["terminus"]
+    inter_data = gen_intermediate_train_data(model,
+                                             features,
+                                             feature_names,
+                                             batch_size)
+    inter_data = inter_data_concat(inter_data)
+    print("N = ", len(inter_data))
+    for i in range(len(inter_data)):
+        print("i =", i)
+        exp = explainer.explain_instance(data_row=inter_data[i],
+                                         predict_fn=terminus.predict)
+        exp = format_explanation(exp)
+        for key in exp:
+            if key not in out.keys():
+                out[key] = []
+            out[key].append(exp[key])
+        print("\033[F", end="")
+        print("\033[F", end="")
+    for key in out:
+        out[key] = np.average(out[key])
+    pos = 0
+    for i in range(len(features)):
+        name = feature_names[i]
+        size = feature_sizes[name]
+        summary[name] = []
+        for j in range(pos, pos + size):
+            if j in out.keys():
+                summary[name].append(out[j])
+        pos += size
+    for name in summary:
+        if len(summary[name]) != 0:
+            summary[name] = np.average(summary[name])
+        else:
+            summary[name] = 0
+    return summary
