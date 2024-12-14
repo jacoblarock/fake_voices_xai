@@ -3,7 +3,6 @@ import classification
 import networks
 import mt_operations
 import explainers
-import metrics
 import matplotlib.pyplot as plt
 from typing import Tuple
 import pandas as pd
@@ -11,7 +10,6 @@ from datetime import datetime
 from keras._tf_keras.keras import utils
 import numpy as np
 import pickle
-import os
 import warnings
 warnings.filterwarnings("ignore")
 print("dependencies loaded")
@@ -524,6 +522,7 @@ def explainer_test(model):
                                  1000000)
         print(out)
         with open("cache/exp_log.txt", "a") as logfile:
+            logfile.write(str(x) + ".wav\n")
             logfile.write(str(out) + "\n")
     # while True:
     #     exp = explainers.explain(model, e, [], [])

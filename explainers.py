@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import lime.lime_tabular as lt
 import tensorflow as tf
-from random import shuffle, uniform as rand
+from random import uniform as rand
 
 def gen_intermediate_train_data(model,
                                 features: list[pd.DataFrame],
