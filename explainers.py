@@ -275,4 +275,7 @@ def explain(model: Model,
             summary[name] = np.average(summary[name])
         else:
             summary[name] = 0
+    norm = np.sqrt(np.sum([x ** 2 for x in summary.values()]))
+    for name in summary:
+        summary[name] = summary[name] / norm
     return summary
