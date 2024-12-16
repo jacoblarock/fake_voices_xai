@@ -432,7 +432,7 @@ def train(eval_until: int):
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="test_multi_percep")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_u23833")
     for history in histories:
         print(history)
 
@@ -534,6 +534,6 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    # train(10000)
-    # eval("models/test_multi_percep", 10000)
-    explainer_test("./trained_models/ItW_multi_percep_until10000")
+    train(23833)
+    eval("models/ItW_multi_percep_u23833", 23833)
+    # explainer_test("./trained_models/ItW_multi_percep_until10000")
