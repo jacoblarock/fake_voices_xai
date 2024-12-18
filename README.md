@@ -98,12 +98,12 @@ and the training. Summaries of the models in the directory are given below.
 ![architecture of the ItW_multi_percep_until10000 model](model_plot.png)
 
 ### Why separated sub-models?
-As can be seen in the diagram of the model, each input feature is first process in its own sub-model
-before being concatenated and run through two final layers, landing at a singular output terminus.
-Because several of the features have a different input shape, it is not practical to concatenate
-the features together for use as an input for a combined model without producing a large amount of
-redundant data and potentially misrepresenting the features in their original form. code for pre-
-model concatenation is present in the repository under the "lines" training method in the
+As can be seen in the diagram of the model, each input feature is first processed in its own
+sub-model before being concatenated and run through two final layers, landing at a singular output
+terminus. Because several of the features have a different input shape, it is not practical to
+concatenate the features together for use as an input for a combined model without producing a large
+amount of redundant data and potentially misrepresenting the features in their original form. code
+for pre- model concatenation is present in the repository under the "lines" training method in the
 classification file, but is presently not used. I have not deleted it in case it may become
 practical in the future.
 
