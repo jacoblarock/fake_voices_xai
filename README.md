@@ -27,7 +27,6 @@ IF a feature extractor is based on a feature which is novel and specific to cert
 an article, it is cited in the comments of the code (references below). Standard features that are
 typical in detection models and not specific to certain research or articles, or features that are
 built in to existing libraries (for example MFCCs) are not cited.
-research.  
   
 The features used in this repository can be, as in my previous research, classified into perceptible
 and imperceptible features. Perceptible features are features that are able to be perceived by
@@ -107,6 +106,23 @@ redundant data and potentially misrepresenting the features in their original fo
 model concatenation is present in the repository under the "lines" training method in the
 classification file, but is presently not used. I have not deleted it in case it may become
 practical in the future.
+
+# Explanation Implementation
+As of now, the explanations are implemented using local interpretable model-agnostic explanations
+(LIME). The implementation functions by generating intermediate evaluation data, the outputs of
+each of the sub-models before the concatenate layer, from the initial training data to use as a 
+reference for the local explainer to create its linear approximation. For the creation of an
+explanation for the prediction on a new sample, the intermediate prediction data will be generated
+in the same fashion and used as the datapoint to explain.
+
+### Why use intermediate data and not the original inputs?
+The intermediate data serves the purpose of offering a direct way to associate the input features
+with the end result, while maintaining a uniform input shape for the explainer, as the built-in
+tabular explainer library in LIME does not support non-uniform input shapes.  
+Drawing an association between the output of the terminus and the outputs of the submodels for each
+feature allows to assess the importance of each individual input feature, as the submodels have no
+interaction with one-another. In short, the total importance of the output of the submodels will be
+equal to the importance of the inputs of each of the submodels.
 
 # Notes on Implementation
 
