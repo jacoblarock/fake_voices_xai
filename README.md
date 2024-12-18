@@ -4,8 +4,8 @@ This repository is a setup for experiments using explainable models to classify 
 audio samples.  
 It consists of feature extraction functions and data preparation to create usable inputs for models
 as well as a creation, training and evaluation setup for a traditional (not explainable) model, with
-the intent of using it as a surrogate for a later explainable model. Implementation of
-explainability using LIME or similar is planned in the near future.
+the intent of using it as a surrogate for a later explainable model. Explanations are generated
+using LIME (details below).
 
 # Setup
 
@@ -107,7 +107,7 @@ model concatenation is present in the repository under the "lines" training meth
 classification file, but is presently not used. I have not deleted it in case it may become
 practical in the future.
 
-# Explanation Implementation
+# Explanations
 As of now, the explanations are implemented using local interpretable model-agnostic explanations
 (LIME). The implementation functions by generating intermediate evaluation data, the outputs of
 each of the sub-models before the concatenate layer, from the initial training data to use as a 
