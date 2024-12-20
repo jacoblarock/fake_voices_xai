@@ -302,6 +302,15 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("shape", ppq55_shim.shape)
     print("max x:", max(ppq55_shim["x"]))
 
+    emobase = mt_operations.file_func(feature_extraction.get_emobase_features,
+                                      dataset_dir,
+                                      kwargs={"directory": dataset_dir,
+                                              "extension": dataset_ext},
+                                      cache_name="emobase")
+    print("emobase extracted", datetime.now())
+    print("shape", emobase.shape)
+    print("max x:", max(emobase["x"]))
+
     return (["hnrs",
              "mel_spec",
              "mfccs",
@@ -316,7 +325,8 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              "local_shim",
              "rap_shim",
              "ppq5_shim",
-             "ppq55_shim"],
+             "ppq55_shim",
+             "emobase"],
             [hnrs,
              mel_spec,
              mfccs,
@@ -331,7 +341,8 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              local_shim,
              rap_shim,
              ppq5_shim,
-             ppq55_shim])
+             ppq55_shim,
+             emobase])
 
 def eval(model: str | classification.networks.models.Sequential, eval_from: int):
 
@@ -411,6 +422,7 @@ def train(eval_until: int):
     rap_shim_model = networks.single_input(name="rap_shimmer")
     ppq5_shim_model = networks.single_input(name="ppq5_shimmer")
     ppq55_shim_model = networks.single_input(name="ppq55_shimmer")
+    emobase_model = networks.multi_input(988, 30, name="emobase")
     model = networks.stitch_and_terminate([hnr_model,
                                            mel_model,
                                            mfcc_model,
@@ -425,7 +437,8 @@ def train(eval_until: int):
                                            local_shim_model,
                                            rap_shim_model,
                                            ppq5_shim_model,
-                                           ppq55_shim_model])
+                                           ppq55_shim_model,
+                                           emobase_model])
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_layer_names=True)
@@ -537,3 +550,4 @@ if __name__ == "__main__":
     train(23833)
     eval("models/ItW_multi_percep_u23833", 23833)
     # explainer_test("./trained_models/ItW_multi_percep_until10000")
+

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 import pandas as pd
+import opensmile
 
 universal_fmin = 65
 universal_fmax = 2093
@@ -43,7 +44,6 @@ def check_cache() -> int:
                 return -1
     return 0
 
-# TODO: MULTITHREADING!!!
 def bulk_extract(directory: str,
                  extension: str,
                  feature: Callable,
@@ -256,3 +256,18 @@ def get_pitch_fluctuation(samples: np.ndarray, sample_rate: int | float, compare
     fluctuations = pitches - comp_pitches
     del pitches, comp_pitches
     return fluctuations[compare_offset:]
+
+# Extract features using opensmile [8]
+def get_emobase_features(directory: str,
+                         file_list: list[str],
+                         extension: str) -> pd.DataFrame:
+    for file in file_list:
+        if file[-len(extension):] != extension:
+            file_list.remove(file)
+    paths = [directory + file for file in file_list]
+    smile = opensmile.Smile(feature_set=opensmile.FeatureSet.emobase)
+    res = smile.process_files(paths).to_numpy()
+    res = pd.Series(list(res))
+    samples = pd.Series(file_list)
+    out = pd.DataFrame({"sample": samples, "x": -1, "y": -1, "feature": res})
+    return out

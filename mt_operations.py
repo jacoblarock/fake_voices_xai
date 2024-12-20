@@ -85,6 +85,7 @@ def file_func(func: Callable,
     Keyword arguments:
     - cache: when True, results will be cached
     - use_cached: when True, previously cached results will be used
+    - cache_name: Name for the cached feature. Takes the name of the function when left blank.
     - args: additional arguments to pass to func
     - kwargs: additional kwargs to pass to the func
     - batch_size: number of files to process in a single batch (by a single worker)
