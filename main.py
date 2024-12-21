@@ -205,7 +205,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
                                          feature_extraction.get_pitch_fluctuation,
                                          [5]],
                                    kwargs=extraction_kwargs,
-                                   cache_name="pitch_flucs"
+                                   cache_name="pitch_flucs_5"
                                    )
     print("pitch_flucs_5 extracted", datetime.now())
     print("shape", pitch_flucs_5.shape)
@@ -218,7 +218,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
                                          feature_extraction.get_pitch_fluctuation,
                                          [10]],
                                    kwargs=extraction_kwargs,
-                                   cache_name="pitch_flucs"
+                                   cache_name="pitch_flucs_10"
                                    )
     print("pitch_flucs_10 extracted", datetime.now())
     print("shape", pitch_flucs_10.shape)
