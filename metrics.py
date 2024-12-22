@@ -58,6 +58,6 @@ def eer(data: list) -> dict:
     return {"eer": _error_rate(threshold, data), "threshold": threshold}
 
 if __name__ == "__main__":
-    results = load_results("./trained_models/ItW_multi_percep_until10000_results.txt")
+    results = load_results("./cache/results.txt")
     eer = eer(results)
     print(eer)
