@@ -55,7 +55,10 @@ Datasets can be put in the `datasets` directory, which is in the .gitignore file
 There are pickle dumps of trained models in the trained_models directory of this repository that can
 be used for evaluation or surrogate purposes. The file names are a summary of the features involved
 and the training. Summaries of the models as well as a graphic of their architectures are given
-the readme files in their respective directories (in progress).
+the readme files in their respective directories (in progress).  
+
+### Example: Architecture of the ItW_multi_percep_until10000 model
+![architecture of the ItW_multi_percep_until10000 model](model_plot.png)
 
 ### Why separated sub-models?
 As can be seen in the diagram of the model, each input feature is first processed in its own
