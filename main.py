@@ -432,7 +432,7 @@ def train(eval_until: int):
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 2 , batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_u23833e2")
+    histories = classification.train(labels, feature_names, model, 2 , batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_u10000e2")
     for history in histories:
         print(history)
 
