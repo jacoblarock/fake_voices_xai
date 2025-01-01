@@ -120,31 +120,31 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("shape", hnrs.shape)
     print("max x:", max(hnrs["x"]))
 
-    mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
-                                   dataset_dir,
-                                   args=[dataset_dir,
-                                         dataset_ext,
-                                         feature_extraction.gen_mel_spec,
-                                         []],
-                                   kwargs=extraction_kwargs,
-                                   cache_name="mel_spec"
-                                   )
-    print("mel extracted", datetime.now())
-    print("shape", mel_spec.shape)
-    print("max x:", max(mel_spec["x"]))
+    # mel_spec = mt_operations.file_func(feature_extraction.bulk_extract,
+    #                                dataset_dir,
+    #                                args=[dataset_dir,
+    #                                      dataset_ext,
+    #                                      feature_extraction.gen_mel_spec,
+    #                                      []],
+    #                                kwargs=extraction_kwargs,
+    #                                cache_name="mel_spec"
+    #                                )
+    # print("mel extracted", datetime.now())
+    # print("shape", mel_spec.shape)
+    # print("max x:", max(mel_spec["x"]))
 
-    mfccs = mt_operations.file_func(feature_extraction.bulk_extract,
-                                   dataset_dir,
-                                   args=[dataset_dir,
-                                         dataset_ext,
-                                         feature_extraction.gen_mfcc,
-                                         [30]],
-                                   kwargs=extraction_kwargs,
-                                   cache_name="mfccs"
-                                   )
-    print("mfccs extracted", datetime.now())
-    print("shape", mfccs.shape)
-    print("max x:", max(mfccs["x"]))
+    # mfccs = mt_operations.file_func(feature_extraction.bulk_extract,
+    #                                dataset_dir,
+    #                                args=[dataset_dir,
+    #                                      dataset_ext,
+    #                                      feature_extraction.gen_mfcc,
+    #                                      [30]],
+    #                                kwargs=extraction_kwargs,
+    #                                cache_name="mfccs"
+    #                                )
+    # print("mfccs extracted", datetime.now())
+    # print("shape", mfccs.shape)
+    # print("max x:", max(mfccs["x"]))
 
     f0_lens = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -197,6 +197,32 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("pitch_flucs extracted", datetime.now())
     print("shape", pitch_flucs.shape)
     print("max x:", max(pitch_flucs["x"]))
+
+    pitch_flucs_5 = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_pitch_fluctuation,
+                                         [5]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="pitch_flucs_5"
+                                   )
+    print("pitch_flucs_5 extracted", datetime.now())
+    print("shape", pitch_flucs_5.shape)
+    print("max x:", max(pitch_flucs_5["x"]))
+
+    pitch_flucs_10 = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_pitch_fluctuation,
+                                         [10]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="pitch_flucs_10"
+                                   )
+    print("pitch_flucs_10 extracted", datetime.now())
+    print("shape", pitch_flucs_10.shape)
+    print("max x:", max(pitch_flucs_10["x"]))
 
     local_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -303,12 +329,14 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("max x:", max(ppq55_shim["x"]))
 
     return (["hnrs",
-             "mel_spec",
-             "mfccs",
+             # "mel_spec",
+             # "mfccs",
              "f0_lens",
              "onset_strength",
              "intensity",
              "pitch_flucs",
+             "pitch_flucs_5",
+             "pitch_flucs_10",
              "local_jitter",
              "rap_jitter",
              "ppq5_jitter",
@@ -318,12 +346,14 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              "ppq5_shim",
              "ppq55_shim"],
             [hnrs,
-             mel_spec,
-             mfccs,
+             # mel_spec,
+             # mfccs,
              f0_lens,
              onset_strength,
              intensity,
              pitch_flucs,
+             pitch_flucs_5,
+             pitch_flucs_10,
              local_jitter,
              rap_jitter,
              ppq5_jitter,
@@ -397,12 +427,14 @@ def train(eval_until: int):
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="hnrs")
-    mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel")
-    mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfcc")
+    # mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel")
+    # mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfcc")
     f0_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="f0_lens")
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="onset_strength")
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="intensity")
     pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs")
+    pitch_fluc_5_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs_5")
+    pitch_fluc_10_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs_10")
     local_jitter_model = networks.single_input(name="local_jitter")
     rap_jitter_model = networks.single_input(name="rap_jitter")
     ppq5_jitter_model = networks.single_input(name="ppq5_jitter")
@@ -412,12 +444,14 @@ def train(eval_until: int):
     ppq5_shim_model = networks.single_input(name="ppq5_shimmer")
     ppq55_shim_model = networks.single_input(name="ppq55_shimmer")
     model = networks.stitch_and_terminate([hnr_model,
-                                           mel_model,
-                                           mfcc_model,
+                                           # mel_model,
+                                           # mfcc_model,
                                            f0_model,
                                            onset_strength_model,
                                            intensity_model,
                                            pitch_fluc_model,
+                                           pitch_fluc_5_model,
+                                           pitch_fluc_10_model,
                                            local_jitter_model,
                                            rap_jitter_model,
                                            ppq5_jitter_model,
@@ -432,7 +466,7 @@ def train(eval_until: int):
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 2 , batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_u23833e2")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_only_percep_wpc_u23833")
     for history in histories:
         print(history)
 
@@ -534,6 +568,6 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(10000)
-    eval("models/ItW_multi_percep_u10000e2", 10000)
+    train(23833)
+    eval("models/ItW_only_percep_wpc_u23833", 23833)
     # explainer_test("./trained_models/ItW_multi_percep_until10000")
