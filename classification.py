@@ -354,6 +354,9 @@ def train(matched_labels: pd.DataFrame,
                     with open("./models/" + save_as + "_progress", "wb") as file:
                         print("dump progress:", progress)
                         pickle.dump(progress, file)
+                    with open("./models/" + save_as + "_histories", "wb") as file:
+                        print("dump histories")
+                        pickle.dump(histories, file)
             progress = progress + sample_batch_size
     return histories
 
