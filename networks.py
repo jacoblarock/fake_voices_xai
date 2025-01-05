@@ -113,17 +113,21 @@ def single_input(name: str | None = None) -> models.Sequential:
 def multi_input(in_count: int,
                 out_count: int,
                 name: str | None = None
-                ) -> models.Sequential:
-    model = models.Sequential()
+                ) -> models.Model:
+    inputs = []
     if name != None:
-        model.add(layers.Input((in_count, 1), name="input_" + name))
+        for i in range(in_count):
+            inputs.append(layers.Input((1, 1), name="input_" + name + "_" + str(i)))
     else:
-        model.add(layers.Input((in_count, 1)))
-    model.add(layers.Flatten())
+        for i in range(in_count):
+            inputs.append(layers.Input((1, 1)))
+    stitch = layers.Concatenate()(inputs)
+    stitch = layers.Flatten()(stitch)
     if name != None:
-        model.add(layers.Dense(out_count, name="out_" + name))
+        stitch = layers.Dense(out_count, name="out_" + name)(stitch)
     else:
-        model.add(layers.Dense(out_count))
+        stitch = layers.Dense(out_count)(stitch)
+    model = models.Model(inputs=inputs, outputs=stitch)
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
@@ -170,24 +174,6 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
     return out
 
 if __name__ == "__main__":
-    model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
+    model = multi_input(20, 15)
     print(model.summary())
-    model_renames = {"input_mel": "input_mel_spec",
-                     "input_mfcc": "input_mfccs",
-                     "input_local_shimmer": "input_local_shim",
-                     "input_rap_shimmer": "input_rap_shim",
-                     "input_ppq5_shimmer": "input_ppq5_shim",
-                     "input_ppq55_shimmer": "input_ppq55_shim",
-                     "out_mel": "out_mel_spec",
-                     "out_mfcc": "out_mfccs",
-                     "out_local_shimmer": "out_local_shim",
-                     "out_rap_shimmer": "out_rap_shim",
-                     "out_ppq5_shimmer": "out_ppq5_shim",
-                     "out_ppq55_shimmer": "out_ppq55_shim",
-                     "dense_15": "dense"
-                     }
-    for name in model_renames:
-        model.get_layer(name).name = model_renames[name]
-    print(model.summary())
-    utils.plot_model(model, "./cache/model.png", show_layer_names=True)
-    pickle.dump(model, open("./trained_models/ItW_multi_percep_until10000", "wb"))
+    utils.plot_model(model, "test.png", show_layer_names=True)
