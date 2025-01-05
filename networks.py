@@ -94,7 +94,7 @@ def create_cnn_1d(input_shape: int,
                   metrics=["accuracy"])
     return model
 
-def single_input(name: str | None = None):
+def single_input(name: str | None = None) -> models.Sequential:
     model = models.Sequential()
     if name != None:
         model.add(layers.Input((1, 1), name="input_" + name))
@@ -105,6 +105,25 @@ def single_input(name: str | None = None):
         model.add(layers.Dense(1, name="out_" + name))
     else:
         model.add(layers.Dense(1))
+    model.compile(optimizer="adam",
+                  loss="mean_squared_error",
+                  metrics=["accuracy"])
+    return model
+
+def multi_input(in_count: int,
+                out_count: int,
+                name: str | None = None
+                ) -> models.Sequential:
+    model = models.Sequential()
+    if name != None:
+        model.add(layers.Input((in_count, 1), name="input_" + name))
+    else:
+        model.add(layers.Input((in_count, 1)))
+    model.add(layers.Flatten())
+    if name != None:
+        model.add(layers.Dense(out_count, name="out_" + name))
+    else:
+        model.add(layers.Dense(out_count))
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
