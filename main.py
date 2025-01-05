@@ -403,14 +403,8 @@ def train(eval_until: int):
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="onset_strength")
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="intensity")
     pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs")
-    local_jitter_model = networks.single_input(name="local_jitter")
-    rap_jitter_model = networks.single_input(name="rap_jitter")
-    ppq5_jitter_model = networks.single_input(name="ppq5_jitter")
-    ppq55_jitter_model = networks.single_input(name="ppq55_jitter")
-    local_shim_model = networks.single_input(name="local_shimmer")
-    rap_shim_model = networks.single_input(name="rap_shimmer")
-    ppq5_shim_model = networks.single_input(name="ppq5_shimmer")
-    ppq55_shim_model = networks.single_input(name="ppq55_shimmer")
+    jitter_model = networks.multi_input(4, 3, name="jitter")
+    shimmer_model = networks.multi_input(4, 3, name="shimmer")
     model = networks.stitch_and_terminate([hnr_model,
                                            mel_model,
                                            mfcc_model,
@@ -418,21 +412,15 @@ def train(eval_until: int):
                                            onset_strength_model,
                                            intensity_model,
                                            pitch_fluc_model,
-                                           local_jitter_model,
-                                           rap_jitter_model,
-                                           ppq5_jitter_model,
-                                           ppq55_jitter_model,
-                                           local_shim_model,
-                                           rap_shim_model,
-                                           ppq5_shim_model,
-                                           ppq55_shim_model])
+                                           jitter_model,
+                                           shimmer_model])
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_layer_names=True)
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_u23833")
+    histories = classification.train(labels, feature_names, model, 2, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_e2_2_u10000")
     for history in histories:
         print(history)
 
@@ -535,5 +523,5 @@ if __name__ == "__main__":
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
     train(10000)
-    eval("models/ItW_multi_percep_u23833", 10000)
-    # explainer_test("./trained_models/ItW_multi_percep_until10000")
+    eval("models/ItW_multi_percep_e2_2_u10000", 10000)
+    # explainer_test("./trained_models/ItW_multi_percep_e2_2_u10000")
