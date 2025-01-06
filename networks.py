@@ -114,6 +114,15 @@ def multi_input(in_count: int,
                 out_count: int,
                 name: str | None = None
                 ) -> models.Sequential:
+    """
+    Creates a model with multiple single-input layers that are concatted together into a specified
+    number of outputs
+    Arguments:
+    - in_count: number of input layers to create
+    - out_count: number of output layers to create
+    Keyword arguments:
+    - name: optional name for the input/output layers
+    """
     model = models.Sequential()
     if name != None:
         model.add(layers.Input((in_count, 1), name="input_" + name))
