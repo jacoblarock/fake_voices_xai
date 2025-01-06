@@ -7,9 +7,6 @@ class container:
         self.data = data
         return
 
-    def get_underlying(self):
-        return self.data
-
 def make_container(data) -> container:
     """
     Wrap prodived object in a container class
@@ -20,4 +17,4 @@ def get_underlying(con: container):
     """
     Function returns the underlying data in a provided container
     """
-    return con.get_underlying()
+    return con.data
