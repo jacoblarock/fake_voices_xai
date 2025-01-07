@@ -19,18 +19,18 @@ def accuracy(data: list | dict, threshold: float) -> float:
                    "fp": 0,
                    "fn": 0}
         for res in data:
-            result = 0 if summary["result"] < threshold else 1
+            result = 0 if res["result"] < threshold else 1
             if res["label"] == 0:
-                if res["result"] == 0:
+                if result == 0:
                     summary["tn"] += 1
-                if res["result"] == 1:
+                if result == 1:
                     summary["fp"] += 1
             if res["label"] == 1:
-                if res["result"] == 0:
+                if result == 0:
                     summary["fn"] += 1
-                if res["result"] == 1:
+                if result == 1:
                     summary["tp"] += 1
-        return (summary["tp"]+summary["tn"]) / (summary["fp"]+summary["fn"])
+        return (summary["tp"]+summary["tn"]) / (summary["tp"]+summary["tn"]+summary["fp"]+summary["fn"])
     # overload for summarized data
     elif type(data) == dict:
         return (data["tp"]+data["tn"]) / (data["fp"]+data["fn"])
@@ -58,6 +58,13 @@ def eer(data: list) -> dict:
     return {"eer": _error_rate(threshold, data), "threshold": threshold}
 
 if __name__ == "__main__":
-    results = load_results("./trained_models/ItW_multi_percep_until10000_results.txt")
-    eer = eer(results)
-    print(eer)
+    import sys
+    if len(sys.argv) > 1:
+        threshold = float(sys.argv[1])
+    else:
+        threshold = 0.5
+    results = load_results("./cache/results.txt")
+    eer_res = eer(results)
+    accuracy_res = accuracy(results, threshold)
+    print("eer:", eer_res)
+    print("accuracy:", accuracy_res)
