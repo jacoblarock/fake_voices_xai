@@ -534,6 +534,6 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(10000)
-    eval("models/ItW_multi_percep_u23833", 10000)
-    # explainer_test("./trained_models/ItW_multi_percep_until10000")
+    # train(10000)
+    # eval("models/ItW_multi_percep_u23833", 10000)
+    explainer_test("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2")
