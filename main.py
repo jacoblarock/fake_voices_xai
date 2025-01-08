@@ -515,12 +515,15 @@ def explainer_test(model):
     e = explainers.make_explainer(labels, model, features, feature_cols, 1000000, 1000, cache_name="e1000")
     for x in range(30000):
         sample_features = explainers.isolate_sample(features, f"{x}.wav")
+        print("Classification:")
+        print(np.average(classification.classify(model, sample_features, feature_cols)))
         out = explainers.explain(model,
                                  e,
                                  sample_features,
                                  feature_cols,
                                  1000000)
         print(out)
+        print("sum:", sum(out.values()))
         with open("cache/exp_log.txt", "a") as logfile:
             logfile.write(str(x) + ".wav\n")
             logfile.write(str(out) + "\n")
