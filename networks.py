@@ -179,7 +179,7 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
     return out
 
 if __name__ == "__main__":
-    model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
+    model: Model = pickle.load(open("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2", "rb"))
     print(model.summary())
     model_renames = {"input_mel": "input_mel_spec",
                      "input_mfcc": "input_mfccs",
@@ -193,10 +193,9 @@ if __name__ == "__main__":
                      "out_rap_shimmer": "out_rap_shim",
                      "out_ppq5_shimmer": "out_ppq5_shim",
                      "out_ppq55_shimmer": "out_ppq55_shim",
-                     "dense_15": "dense"
                      }
     for name in model_renames:
         model.get_layer(name).name = model_renames[name]
     print(model.summary())
     utils.plot_model(model, "./cache/model.png", show_layer_names=True)
-    pickle.dump(model, open("./trained_models/ItW_multi_percep_until10000", "wb"))
+    pickle.dump(model, open("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2", "wb"))
