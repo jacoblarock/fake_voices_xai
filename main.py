@@ -397,8 +397,8 @@ def train(eval_until: int):
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="hnrs")
-    mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel")
-    mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfcc")
+    mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel_spec")
+    mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfccs")
     f0_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="f0_lens")
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="onset_strength")
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="intensity")
