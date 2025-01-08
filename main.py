@@ -407,10 +407,10 @@ def train(eval_until: int):
     rap_jitter_model = networks.single_input(name="rap_jitter")
     ppq5_jitter_model = networks.single_input(name="ppq5_jitter")
     ppq55_jitter_model = networks.single_input(name="ppq55_jitter")
-    local_shim_model = networks.single_input(name="local_shimmer")
-    rap_shim_model = networks.single_input(name="rap_shimmer")
-    ppq5_shim_model = networks.single_input(name="ppq5_shimmer")
-    ppq55_shim_model = networks.single_input(name="ppq55_shimmer")
+    local_shim_model = networks.single_input(name="local_shim")
+    rap_shim_model = networks.single_input(name="rap_shim")
+    ppq5_shim_model = networks.single_input(name="ppq5_shim")
+    ppq55_shim_model = networks.single_input(name="ppq55_shim")
     model = networks.stitch_and_terminate([hnr_model,
                                            mel_model,
                                            mfcc_model,
