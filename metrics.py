@@ -33,7 +33,7 @@ def accuracy(data: list | dict, threshold: float) -> float:
         return (summary["tp"]+summary["tn"]) / (summary["tp"]+summary["tn"]+summary["fp"]+summary["fn"])
     # overload for summarized data
     elif type(data) == dict:
-        return (data["tp"]+data["tn"]) / (data["fp"]+data["fn"])
+        return (data["tp"]+data["tn"]) / (data["tp"]+data["tn"]+data["fp"]+data["fn"])
     raise TypeError("data must be of type list or dict, a result of the evaluate method")
 
 # function to minimize for calculation of EER
