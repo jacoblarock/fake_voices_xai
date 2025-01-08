@@ -260,7 +260,7 @@ def explain(model: Model,
         print("\033[F", end="")
         print("\033[F", end="")
     for key in out:
-        out[key] = np.average(out[key])
+        out[key] = np.sum(out[key])
     pos = 0
     for i in range(len(features)):
         name = feature_names[i]
