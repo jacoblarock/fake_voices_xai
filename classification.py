@@ -317,7 +317,7 @@ def train(matched_labels: pd.DataFrame,
             for line in sample_batch:
                 sample = samples.loc[line, "name"]
                 label = samples.loc[line, "label"]
-                print("\r", " " * 20, "\r", end="", flush=True)
+                print("\r", " " * 40, "\r", end="", flush=True)
                 print("adding: ", sample, "label: ", label, datetime.now(), end="", flush=True)
                 new_sample = pd.DataFrame([])
                 for i in range(len(features)):
@@ -339,10 +339,10 @@ def train(matched_labels: pd.DataFrame,
                     for feature in feature_cols:
                         temp = joined.loc[batch, feature].to_numpy()
                         temp = np.stack(temp, axis=0)
-                        print("\r", " " * 20, "\r", end="", flush=True)
+                        print("\r", " " * 40, "\r", end="", flush=True)
                         print("start conversion to tensor", datetime.now(), end="", flush=True)
                         inputs.append(tf.convert_to_tensor(temp))
-                        print("\r", " " * 20, "\r", end="", flush=True)
+                        print("\r", " " * 40, "\r", end="", flush=True)
                         print("converted to tensor", datetime.now(), end="", flush=True)
                 labels = tf.convert_to_tensor(joined.loc[batch, "label"])
                 histories.append(model.fit(x=inputs, y=labels, epochs=epochs))
@@ -411,6 +411,21 @@ def train(matched_labels: pd.DataFrame,
 #                 labels = tf.convert_to_tensor(joined.loc[batch, "label"])
 #                 results.append(model.evaluate(x=inputs, y=labels))
 #     return results
+
+def isolate_sample(features: list[pd.DataFrame],
+                   sample: str
+                   ) -> list[pd.DataFrame]:
+    """
+    Isolates the features of a single sample out of dataframes of extracted features of many
+    samples.
+    Arguments:
+    - features: list of feature dataframes
+    - sample: name of the sample to isolate (including file extension)
+    """
+    out = []
+    for i in range(len(features)):
+        out.append(features[i].loc[features[i]["sample"] == sample].reset_index(drop=True))
+    return out
 
 def classify(model: networks.models.Sequential,
              features: list[pd.DataFrame],

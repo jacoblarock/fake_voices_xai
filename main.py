@@ -511,10 +511,9 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    log = open("cache/exp_log.txt", "w")
-    e = explainers.make_explainer(labels, model, features, feature_cols, 1000000, 1000, cache_name="e1000")
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=1000000, train_data_limit=10000, subset_size=1000, cache_name="e1000")
     for x in range(30000):
-        sample_features = explainers.isolate_sample(features, f"{x}.wav")
+        sample_features = classification.isolate_sample(features, f"{x}.wav")
         print("Classification:")
         print(np.average(classification.classify(model, sample_features, feature_cols)))
         out = explainers.explain(model,

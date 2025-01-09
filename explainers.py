@@ -36,11 +36,16 @@ def gen_intermediate_train_data(model: Model,
         print(len(dec_model))
         print(len(features))
         raise ValueError("number of features does not correspond to the number of sub models")
+    print()
+    print()
     for i in range(len(features)):
         feature_name = feature_names[i]
         sub_model = dec_model[feature_name]
         feature = features[i].loc[:, "feature"]
         out[feature_name] = pd.Series()
+        print("\033[F", end="")
+        print("\033[F", end="")
+        print("\r", " " * 40, "\r", end="", flush=True)
         print("gen intermediate data for", feature_name)
         batches = classification.gen_batches(feature.index, batch_size)
         for batch in batches:
@@ -90,6 +95,7 @@ def prep_train_data_sample(inter_data: dict[str, pd.Series],
                            features: list[pd.DataFrame],
                            feature_names: list[str],
                            labels: pd.DataFrame,
+                           train_data_limit: int,
                            subset_size: int
                            ) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -107,16 +113,16 @@ def prep_train_data_sample(inter_data: dict[str, pd.Series],
                               inter_data)
     del inter_data
     joined = pd.DataFrame()
-    subset = labels.sample(subset_size).index
+    subset = labels.loc[0:train_data_limit-1].sample(subset_size).index
     print("preparing train data subset")
     for i in subset:
         sample = labels.loc[i, "name"]
         label = labels.loc[i, "label"]
-        print("\r", " " * 20, "\r", end="", flush=True)
+        print("\r", " " * 40, "\r", end="", flush=True)
         print("adding: ", sample, "label: ", label, datetime.now(), end="", flush=True)
         new_sample = pd.DataFrame([])
-        for i in range(len(features)):
-            temp = features[i].loc[features[i]["sample"] == sample].reset_index(drop=True)
+        for i in range(len(sub_data)):
+            temp = sub_data[i].loc[sub_data[i]["sample"] == sample].reset_index(drop=True)
             temp = pd.DataFrame({feature_names[i]: temp["feature"]})
             new_sample = classification.additive_merge(new_sample, temp)
         new_sample["label"] = label
@@ -135,6 +141,7 @@ def make_explainer(labels: pd.DataFrame,
                    features: list[pd.DataFrame],
                    feature_names: list[str],
                    batch_size: int,
+                   train_data_limit: int,
                    subset_size: int,
                    cache: bool = True,
                    use_cached: bool = True,
@@ -166,6 +173,7 @@ def make_explainer(labels: pd.DataFrame,
                                                              features,
                                                              feature_names,
                                                              labels,
+                                                             train_data_limit,
                                                              subset_size)
     explainer = lt.LimeTabularExplainer(training_data=train_subset,
                                         training_labels=labels_subset,
@@ -192,16 +200,9 @@ def isolate_sample(features: list[pd.DataFrame],
                    sample: str
                    ) -> list[pd.DataFrame]:
     """
-    Isolates the features of a single sample out of dataframes of extracted features of many
-    samples.
-    Arguments:
-    - features: list of feature dataframes
-    - sample: name of the sample to isolate (including file extension)
+    Interface for the isolate feature function in classification due to compatability reasons
     """
-    out = []
-    for i in range(len(features)):
-        out.append(features[i].loc[features[i]["sample"] == sample])
-    return out
+    return classification.isolate_sample(features, sample)
 
 def format_explanation(explanation: lt.explanation.Explanation
                        ) -> dict[int, float]:
@@ -260,7 +261,7 @@ def explain(model: Model,
         print("\033[F", end="")
         print("\033[F", end="")
     for key in out:
-        out[key] = np.sum(out[key])
+        out[key] = np.average(out[key])
     pos = 0
     for i in range(len(features)):
         name = feature_names[i]
@@ -276,6 +277,7 @@ def explain(model: Model,
         else:
             summary[name] = 0
     norm = np.sqrt(np.sum([x ** 2 for x in summary.values()]))
+    # norm = 1
     for name in summary:
         summary[name] = summary[name] / norm
     return summary
