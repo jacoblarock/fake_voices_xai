@@ -57,4 +57,5 @@ if __name__ == "__main__":
                         "spoof",
                         "bona-fide")
     rel = relevance(exp, labels)
+    print(imp)
     print(rel)
