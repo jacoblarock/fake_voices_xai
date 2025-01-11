@@ -198,6 +198,32 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("shape", pitch_flucs.shape)
     print("max x:", max(pitch_flucs["x"]))
 
+    pitch_flucs_5 = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_pitch_fluctuation,
+                                         [5]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="pitch_flucs_5"
+                                   )
+    print("pitch_flucs_5 extracted", datetime.now())
+    print("shape", pitch_flucs_5.shape)
+    print("max x:", max(pitch_flucs_5["x"]))
+
+    pitch_flucs_10 = mt_operations.file_func(feature_extraction.bulk_extract,
+                                   dataset_dir,
+                                   args=[dataset_dir,
+                                         dataset_ext,
+                                         feature_extraction.get_pitch_fluctuation,
+                                         [10]],
+                                   kwargs=extraction_kwargs,
+                                   cache_name="pitch_flucs_10"
+                                   )
+    print("pitch_flucs_10 extracted", datetime.now())
+    print("shape", pitch_flucs_10.shape)
+    print("max x:", max(pitch_flucs_10["x"]))
+
     local_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
                                    args=[dataset_dir,
@@ -403,6 +429,8 @@ def train(eval_until: int):
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="onset_strength")
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="intensity")
     pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs")
+    pitch_fluc_5_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs_5")
+    pitch_fluc_10_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs_10")
     local_jitter_model = networks.single_input(name="local_jitter")
     rap_jitter_model = networks.single_input(name="rap_jitter")
     ppq5_jitter_model = networks.single_input(name="ppq5_jitter")
@@ -418,6 +446,8 @@ def train(eval_until: int):
                                            onset_strength_model,
                                            intensity_model,
                                            pitch_fluc_model,
+                                           pitch_fluc_5_model,
+                                           pitch_fluc_10_model,
                                            local_jitter_model,
                                            rap_jitter_model,
                                            ppq5_jitter_model,
@@ -432,7 +462,7 @@ def train(eval_until: int):
     except:
         print("model plot not possible")
     # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep_u23833")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_multi_percep2_u10000")
     for history in histories:
         print(history)
 
@@ -536,6 +566,6 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    # train(10000)
-    # eval("models/ItW_multi_percep_u23833", 10000)
-    explainer_test("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2")
+    train(10000)
+    eval("models/ItW_multi_percep2_u10000", 10000)
+    # explainer_test("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2")
