@@ -545,7 +545,7 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=1000000, train_data_limit=10000, subset_size=1000, cache_name="e1000")
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=1000000, train_data_limit=10000, subset_size=10000, cache_name="e_pf_10000")
     for x in range(30000):
         sample_features = classification.isolate_sample(features, f"{x}.wav")
         print("Classification:")
