@@ -336,7 +336,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
 
 def eval(model: str | classification.networks.models.Sequential, eval_from: int):
 
-    dataset_dir = "datasets/ASVspoof2021_DF_eval/flac/"
+    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac/"
     dataset_ext = "flac"
     extraction_kwargs={"cache": False,
             "use_cached": False,
@@ -350,7 +350,7 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
     filter["name"] = filter["name"].apply(lambda x : str(x) + "." + dataset_ext)
 
     # load labels
-    labels = classification.get_labels("datasets/ASVspoof2021_DF_eval/flac/", 0, 4, "spoof", "bonafide", header=False, delimiter=" ")
+    labels = classification.get_labels("./datasets/ASVspoof2021_DF_eval/flac/", 0, 4, "spoof", "bonafide", header=False, delimiter=" ")
     # labels["name"] = labels["name"].apply(lambda x: x + ".flac")
     labels = labels.join(filter.set_index("name"), how="inner", on=["name"])
 
@@ -372,7 +372,7 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
 def train(eval_until: int):
     feature_extraction.check_cache()
 
-    dataset_dir = "datasets/ASVspoof2021_DF_eval/flac/"
+    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac/"
     dataset_ext = "flac"
     extraction_kwargs={"cache": False,
             "use_cached": False,
@@ -385,7 +385,7 @@ def train(eval_until: int):
     filter["name"] = filter["name"].apply(lambda x : str(x) + "." + dataset_ext)
 
     # get labels
-    labels = classification.get_labels("datasets/ASVspoof2021_DF_eval/flac/", 0, 4, "spoof", "bonafide", header=False, delimiter=" ")
+    labels = classification.get_labels("./datasets/ASVspoof2021_DF_eval/flac/", 0, 4, "spoof", "bonafide", header=False, delimiter=" ")
     labels = labels.join(filter.set_index("name"), how="inner", on=["name"])
     print("labels", datetime.now())
 
@@ -493,7 +493,7 @@ def classify_test(model: str | classification.networks.models.Sequential, filena
     return (avg, median)
 
 def explainer_test(model):
-    dataset_dir = "datasets/ASVspoof2021_DF_eval/flac/"
+    dataset_dir = "./datasets/ASVspoof2021_DF_eval/flac/"
     dataset_ext = "flac"
     extraction_kwargs={"cache": False,
             "use_cached": False,
@@ -502,7 +502,7 @@ def explainer_test(model):
             }
 
     feature_cols, features = extract_separate(dataset_dir, dataset_ext, extraction_kwargs)
-    labels = classification.get_labels("datasets/ASVspoof2021_DF_eval/flac/", 0, 4, "spoof", "bonafide", header=False, delimiter=" ")
+    labels = classification.get_labels("./datasets/ASVspoof2021_DF_eval/flac/", 0, 4, "spoof", "bonafide", header=False, delimiter=" ")
 
     if type(model) == str:
         model = pickle.load(open(model, "rb"))
