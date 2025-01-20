@@ -344,6 +344,7 @@ def train(matched_labels: pd.DataFrame,
                         print("\r", " " * 40, "\r", end="", flush=True)
                         print("start conversion to tensor", datetime.now(), end="", flush=True)
                         inputs.append(tf.convert_to_tensor(temp))
+                        del temp
                         print("\r", " " * 40, "\r", end="", flush=True)
                         print("converted to tensor", datetime.now(), end="", flush=True)
                 labels = tf.convert_to_tensor(joined.loc[batch, "label"])
