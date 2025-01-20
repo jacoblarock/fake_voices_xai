@@ -428,7 +428,7 @@ def train(eval_until: int):
                                            ppq55_shim_model])
     print(model.summary())
     try:
-        utils.plot_model(model, "model_plot.png", show_layer_names=True)
+        utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")
     except:
         print("model plot not possible")
     histories = classification.train(labels, feature_names, model, 1, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as="ItW_multi_percep_wval_u3474")
