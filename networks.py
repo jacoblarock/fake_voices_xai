@@ -1,9 +1,5 @@
-from numpy import concatenate
-import tensorflow as tf
-from keras._tf_keras.keras import models, layers, losses, utils, Model
-from tensorflow import convert_to_tensor
+from keras._tf_keras.keras import models, layers, losses, utils, Model, KerasTensor
 from typing import Tuple
-import numpy as np
 import pickle
 
 def create_cnn_2d(input_shape: Tuple[int, int],
@@ -139,11 +135,14 @@ def multi_input(in_count: int,
     return model
 
 def stitch_and_terminate(model_list: list[models.Sequential],
+                         n_layers: int = 0
                          ) -> models.Model:
     """
     Stitch multiple models (created using the above functions) together to use multiple (non-concatted) features
     Arguments:
     - model_list: list of models to stitch together
+    Keyword arguments:
+    - n_layers: the number of hidden dense layers to add.
     """
     outputs = []
     for m in model_list:
@@ -153,6 +152,9 @@ def stitch_and_terminate(model_list: list[models.Sequential],
         inputs.append(m.inputs)
     stitch = layers.Concatenate()(outputs)
     stitch = layers.Flatten()(stitch)
+    output_size: int = stitch.shape[1]
+    for i in range(n_layers):
+        stitch = layers.Dense(output_size - 2 * i - 2, name=f"h_dense_{i}")(stitch)
     stitch = layers.Dense(1)(stitch)
     model = models.Model(inputs=inputs, outputs=stitch)
     model.compile(optimizer="adam",
