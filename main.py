@@ -426,7 +426,7 @@ def train(eval_until: int):
                                            rap_shim_model,
                                            ppq5_shim_model,
                                            ppq55_shim_model],
-                                          n_layers=2)
+                                          n_layers=3)
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")

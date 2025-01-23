@@ -154,7 +154,7 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     stitch = layers.Flatten()(stitch)
     output_size: int = stitch.shape[1]
     for i in range(n_layers):
-        stitch = layers.Dense(output_size - 2 * i - 2, name=f"h_dense_{i}")(stitch)
+        stitch = layers.Dense(output_size // (2 * (i + 1)), name=f"h_dense_{i}")(stitch)
     stitch = layers.Dense(1)(stitch)
     model = models.Model(inputs=inputs, outputs=stitch)
     model.compile(optimizer="adam",
