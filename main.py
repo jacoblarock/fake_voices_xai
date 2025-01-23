@@ -511,16 +511,15 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=1000000, train_data_limit=10000, subset_size=1000, cache_name="e1000")
-    for x in range(30000):
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000cterm")
+    for x in range(10000, 30000):
         sample_features = classification.isolate_sample(features, f"{x}.wav")
-        print("Classification:")
-        print(np.average(classification.classify(model, sample_features, feature_cols)))
+        print(classification.classify(model, features, feature_cols))
         out = explainers.explain(model,
                                  e,
                                  sample_features,
                                  feature_cols,
-                                 1000000)
+                                 100000)
         print(out)
         print("sum:", sum(out.values()))
         with open("cache/exp_log.txt", "a") as logfile:
@@ -536,6 +535,6 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(20000)
-    eval("models/ItW_multi_percep_wval_cterm_u20000", 20000)
-    # explainer_test("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2")
+    # train(20000)
+    # eval("models/ItW_multi_percep_wval_cterm_u20000", 20000)
+    explainer_test("./trained_models/ItW_multi_percep_wval_cterm_u10000/ItW_multi_percep_wval_cterm_u10000")
