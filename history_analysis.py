@@ -38,7 +38,7 @@ def find_min(history_stats: dict[str,np.ndarray],
     return (min_i, min_stat)
 
 if __name__ == "__main__":
-    test = get_history_stats("models/ItW_multi_percep_wval_u23833_histories")
+    test = get_history_stats("models/ItW_multi_percep_wval_cterm_u10000_histories")
     print(test)
     print(find_min(test, "val_loss", 0))
     plot_history(test, "val_loss", 0)
