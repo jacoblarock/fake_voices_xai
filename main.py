@@ -519,7 +519,7 @@ def explainer_test(model):
                                  e,
                                  sample_features,
                                  feature_cols,
-                                 100000)
+                                 10000)
         print(out)
         print("sum:", sum(out.values()))
         with open("cache/exp_log.txt", "a") as logfile:
