@@ -59,12 +59,16 @@ def eer(data: list) -> dict:
 
 if __name__ == "__main__":
     import sys
+    from glob import glob
     if len(sys.argv) > 1:
         threshold = float(sys.argv[1])
     else:
         threshold = 0.5
-    results = load_results("./cache/results.txt")
-    eer_res = eer(results)
-    accuracy_res = accuracy(results, threshold)
-    print("eer:", eer_res)
-    print("accuracy:", accuracy_res)
+    result_list = glob("./trained_models/*/*results.txt")
+    for result_path in result_list:
+        print(result_path.split("/")[-2])
+        results = load_results(result_path)
+        eer_res = eer(results)
+        accuracy_res = accuracy(results, threshold)
+        print("eer:", eer_res)
+        print("accuracy:", accuracy_res)
