@@ -66,6 +66,7 @@ if __name__ == "__main__":
         threshold = 0.5
     result_list = glob("./trained_models/*/*results.txt")
     for result_path in result_list:
+        print()
         print(result_path.split("/")[-2])
         results = load_results(result_path)
         eer_res = eer(results)
