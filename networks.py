@@ -161,6 +161,7 @@ def stitch_and_terminate(model_list: list[models.Sequential],
             stitch = layers.Dense(output_size // (2 * (i + 1)), name=f"h_dense_{i}")(stitch)
         else:
             stitch = layers.Conv1D(32, 3, activation="relu", name=f"h_conv_{i}")(stitch)
+            stitch = layers.MaxPooling1D(2)(stitch)
     stitch = layers.Flatten()(stitch)
     stitch = layers.Dense(1)(stitch)
     model = models.Model(inputs=inputs, outputs=stitch)
