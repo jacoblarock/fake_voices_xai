@@ -157,7 +157,6 @@ def stitch_and_terminate(model_list: list[models.Sequential],
         stitch = layers.Reshape(stitch.shape[1:] + (1,))(stitch)
     output_size: int = stitch.shape[1]
     for i in range(n_layers):
-        print("hidden layer", stitch.shape)
         if not convolution:
             stitch = layers.Dense(output_size // (2 * (i + 1)), name=f"h_dense_{i}")(stitch)
         else:
