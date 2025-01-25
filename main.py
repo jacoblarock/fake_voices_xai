@@ -426,13 +426,14 @@ def train(eval_until: int):
                                            rap_shim_model,
                                            ppq5_shim_model,
                                            ppq55_shim_model],
-                                          n_layers=3)
+                                          n_layers=3,
+                                          convolution=True)
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")
     except:
         print("model plot not possible")
-    histories = classification.train(labels, feature_names, model, 1, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as="ItW_multi_percep_wval_cterm_u20000")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as="ItW_multi_percep_wval_convterm_u10000")
     for history in histories:
         print(history)
 
@@ -511,7 +512,7 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000cterm")
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000convterm")
     for x in range(10000, 30000):
         sample_features = classification.isolate_sample(features, f"{x}.wav")
         out = explainers.explain(model,
@@ -534,6 +535,6 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    # train(20000)
-    # eval("models/ItW_multi_percep_wval_cterm_u20000", 20000)
-    explainer_test("./trained_models/ItW_multi_percep_wval_cterm_u10000/ItW_multi_percep_wval_cterm_u10000")
+    train(10000)
+    eval("models/ItW_multi_percep_wval_convterm_u10000", 10000)
+    # explainer_test("./trained_models/ItW_multi_percep_wval_convterm_u10000/ItW_multi_percep_wval_convterm_u10000")

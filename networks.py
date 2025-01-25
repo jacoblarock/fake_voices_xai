@@ -135,7 +135,8 @@ def multi_input(in_count: int,
     return model
 
 def stitch_and_terminate(model_list: list[models.Sequential],
-                         n_layers: int = 0
+                         n_layers: int = 0,
+                         convolution: bool = False
                          ) -> models.Model:
     """
     Stitch multiple models (created using the above functions) together to use multiple (non-concatted) features
@@ -143,6 +144,7 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     - model_list: list of models to stitch together
     Keyword arguments:
     - n_layers: the number of hidden dense layers to add.
+    - convolution: when True, added hidden layers are convolutional.
     """
     outputs = []
     for m in model_list:
@@ -151,15 +153,23 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     for m in model_list:
         inputs.append(m.inputs)
     stitch = layers.Concatenate()(outputs)
-    stitch = layers.Flatten()(stitch)
+    if convolution:
+        stitch = layers.Reshape(stitch.shape[1:] + (1,))(stitch)
     output_size: int = stitch.shape[1]
     for i in range(n_layers):
-        stitch = layers.Dense(output_size // (2 * (i + 1)), name=f"h_dense_{i}")(stitch)
+        print("hidden layer", stitch.shape)
+        if not convolution:
+            stitch = layers.Dense(output_size // (2 * (i + 1)), name=f"h_dense_{i}")(stitch)
+        else:
+            stitch = layers.Conv1D(32, 3, activation="relu", name=f"h_conv_{i}")(stitch)
+    stitch = layers.Flatten()(stitch)
     stitch = layers.Dense(1)(stitch)
     model = models.Model(inputs=inputs, outputs=stitch)
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
+    print("TEST CASE", model.layers[0].name)
+    exit()
     return model
 
 def decompose(model: models.Model) -> dict[str, models.Model]:
@@ -173,9 +183,14 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
         outputs = model.get_layer("out_" + name).output
         out[name] = Model(inputs=inputs, outputs=outputs)
     try:
-        try:
-            inputs = model.get_layer("h_dense_0").input
-        except:
+        # find inputs of the terminus
+        inputs = None
+        for layer in model.layers:
+            if "h_dense_0" == layer.name:
+                inputs = model.get_layer("h_dense_0").input
+            elif "h_conv_0" == layer.name:
+                inputs = model.get_layer("h_conv_0").input
+        if not inputs:
             inputs = model.get_layer("dense").input
         outputs = model.get_layer("dense").output
         out["terminus"] = Model(inputs=inputs, outputs=outputs)
