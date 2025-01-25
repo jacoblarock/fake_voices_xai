@@ -168,8 +168,6 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["accuracy"])
-    print("TEST CASE", model.layers[0].name)
-    exit()
     return model
 
 def decompose(model: models.Model) -> dict[str, models.Model]:
