@@ -185,7 +185,7 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
         for layer in model.layers:
             if "h_dense_0" == layer.name:
                 inputs = model.get_layer("h_dense_0").input
-            elif "h_conv_0" == layer.name:
+            elif "reshape" == layer.name:
                 inputs = model.get_layer("h_conv_0").input
         if not inputs:
             inputs = model.get_layer("dense").input
