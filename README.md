@@ -18,6 +18,13 @@ Then, activate the environment using:
 ```
 conda activate fake_voices
 ```
+Datasets can be downloaded into subfolders in the `datasets` directory (details in a following
+section). By default, `datasets/release_in_the_wild` will be searched for, but this can of course
+be changed.  
+The main function will train and test a model as well as generate explanations, unless a line is
+commented out. The features used and the model specifications for a given experiment can be easily
+changed in the main file. This can, however be hardware-limited as at least 10 GB RAM and approx.
+4 GB VRAM are required.
 
 # Feature Extractors
 
