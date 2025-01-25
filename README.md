@@ -57,8 +57,8 @@ be used for evaluation or surrogate purposes. The file names are a summary of th
 and the training. Summaries of the models as well as a graphic of their architectures are given
 the readme files in their respective directories (in progress).  
 
-### Example: Architecture of the ItW_multi_percep_until10000 model
-![architecture of the ItW_multi_percep_until10000 model](model_plot.png)
+### Example: Architecture of the featured model in the repository
+![architecture of the featured model, others in the trained_models directory](model_plot.png)
 
 ### Why separated sub-models?
 As can be seen in the diagram of the model, each input feature is first processed in its own
