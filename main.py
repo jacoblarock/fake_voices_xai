@@ -355,7 +355,7 @@ def evaluate(model: str | classification.networks.models.Sequential, eval_from: 
 
     # load model if a path is provided
     if type(model) == str:
-        model = pickle.load(open(model, "rb"))
+        model = pickle.load(open(f"models/{model}", "rb"))
     print(model.summary())
 
     # creates a list of dataframes for each extracted feature for sample-based batching
@@ -536,7 +536,7 @@ if __name__ == "__main__":
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
     # experiment metadata 
-    model_name = "models/ItW_multi_percep_wval_convterm_u10000"
+    model_name = "ItW_multi_percep_wval_convterm_u10000"
     train_cutoff = 10000
 
     train(model_name, train_cutoff)
