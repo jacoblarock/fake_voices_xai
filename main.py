@@ -333,7 +333,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              ppq5_shim,
              ppq55_shim])
 
-def eval(model: str | classification.networks.models.Sequential, eval_from: int):
+def evaluate(model: str | classification.networks.models.Sequential, eval_from: int):
 
     dataset_dir = "./datasets/release_in_the_wild/"
     dataset_ext = "wav"
@@ -368,7 +368,7 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
     with open("cache/results_summary.txt", "w") as file:
         file.write(str(summary))
 
-def train(eval_until: int):
+def train(model_name, eval_until: int):
     feature_extraction.check_cache()
 
     dataset_dir = "./datasets/release_in_the_wild"
@@ -433,7 +433,7 @@ def train(eval_until: int):
         utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")
     except:
         print("model plot not possible")
-    histories = classification.train(labels, feature_names, model, 1, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as="ItW_multi_percep_wval_convterm_u10000")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as=model_name)
     for history in histories:
         print(history)
 
@@ -535,6 +535,10 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(10000)
-    eval("models/ItW_multi_percep_wval_convterm_u10000", 10000)
+    # experiment metadata 
+    model_name = "models/ItW_multi_percep_wval_convterm_u10000"
+    train_cutoff = 10000
+
+    train(model_name, train_cutoff)
+    evaluate(model_name, train_cutoff)
     # explainer_test("./trained_models/ItW_multi_percep_wval_convterm_u10000/ItW_multi_percep_wval_convterm_u10000")
