@@ -540,4 +540,4 @@ if __name__ == "__main__":
 
     train(model_name, train_cutoff)
     evaluate(model_name, train_cutoff)
-    # explainer_test("./trained_models/ItW_multi_percep_wval_convterm_u10000/ItW_multi_percep_wval_convterm_u10000")
+    # explainer_test("./trained_models/ItW_multi_percep_wval_convpoolterm_u10000/ItW_multi_percep_wval_convpoolterm_u10000")
