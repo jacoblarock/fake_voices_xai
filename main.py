@@ -426,8 +426,7 @@ def train(model_name, eval_until: int):
                                            rap_shim_model,
                                            ppq5_shim_model,
                                            ppq55_shim_model],
-                                          n_layers=3,
-                                          convolution=True)
+                                          n_layers=3)
     print(model.summary())
     try:
         utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")
@@ -512,7 +511,7 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000convpoolterm")
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000cterm")
     for x in range(10000, 30000):
         sample_features = classification.isolate_sample(features, f"{x}.wav")
         out = explainers.explain(model,
@@ -536,7 +535,7 @@ if __name__ == "__main__":
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
     # experiment metadata 
-    model_name = "ItW_multi_percep_wval_convpoolterm_u10000"
+    model_name = "ItW_multi_percep_wval_cterm_u10000"
     train_cutoff = 10000
 
     train(model_name, train_cutoff)
