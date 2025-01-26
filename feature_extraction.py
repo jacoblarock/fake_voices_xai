@@ -27,20 +27,26 @@ def lr_load_file(filepath: str) -> Tuple[np.ndarray, Union[int, float]]:
     return samples, sr
 
 def check_cache() -> int:
-    cache_paths = ["./cache",
-                   "./cache/extracted_features",
-                   "./cache/matched_labels"
-                   "./cache/mt_ops"
-                   "./cache/explainers"
-                   "./models"
+    cache_paths = [("cache", 0),
+                   ("models", 0),
+                   ("datasets", 0),
+                   ("extracted_features", "cache"),
+                   ("matched_labels", "cache"),
+                   ("mt_ops", "cache"),
+                   ("explainers", "cache")
                    ]
-    complete = 1
-    for path in cache_paths:
+    for path_node in cache_paths:
+        if path_node[1] != 0:
+            os.chdir(path_node[1])
+        path = path_node[0]
         if not os.path.exists(path):
             try:
                 os.mkdir(path)
-            except:
+            except Exception as e:
+                print(e)
                 return -1
+        if path_node[1] != 0:
+            os.chdir("..")
     return 0
 
 # TODO: MULTITHREADING!!!
