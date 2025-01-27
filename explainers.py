@@ -137,7 +137,7 @@ def prep_train_data_sample(inter_data: dict[str, pd.Series],
 def get_terminus_input_size(model: Model) -> int:
     dec_model = networks.decompose(model)
     terminus = dec_model["terminus"]
-    return len(terminus.layers[0].input)
+    return terminus.layers[0].input
 
 def make_explainer(labels: pd.DataFrame,
                    model: Model,
