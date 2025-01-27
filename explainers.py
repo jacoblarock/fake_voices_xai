@@ -43,8 +43,6 @@ def gen_intermediate_train_data(model: Model,
         sub_model = dec_model[feature_name]
         feature = features[i].loc[:, "feature"]
         out[feature_name] = pd.Series()
-        print("\033[F", end="")
-        print("\033[F", end="")
         print("\r", " " * 40, "\r", end="", flush=True)
         print("gen intermediate data for", feature_name)
         batches = classification.gen_batches(feature.index, batch_size)
@@ -136,6 +134,11 @@ def prep_train_data_sample(inter_data: dict[str, pd.Series],
         joined.drop(columns=[name])
     return inter_data_concat(joined_features_map), out_labels
 
+def get_terminus_input_size(model: Model) -> int:
+    dec_model = networks.decompose(model)
+    terminus = dec_model["terminus"]
+    return len(terminus.layers[0].input)
+
 def make_explainer(labels: pd.DataFrame,
                    model: Model,
                    features: list[pd.DataFrame],
@@ -175,9 +178,10 @@ def make_explainer(labels: pd.DataFrame,
                                                              labels,
                                                              train_data_limit,
                                                              subset_size)
+    terminus_input_size = get_terminus_input_size(model)
     explainer = lt.LimeTabularExplainer(training_data=train_subset,
                                         training_labels=labels_subset,
-                                        feature_names=["|" + str(i) + "|" for i in range(218)],
+                                        feature_names=["|" + str(i) + "|" for i in range(terminus_input_size)],
                                         mode="regression")
     if cache:
         check_cache()
@@ -258,8 +262,6 @@ def explain(model: Model,
             if key not in out.keys():
                 out[key] = []
             out[key].append(exp[key])
-        print("\033[F", end="")
-        print("\033[F", end="")
     for key in out:
         out[key] = np.average(out[key])
     pos = 0
@@ -281,3 +283,7 @@ def explain(model: Model,
     for name in summary:
         summary[name] = summary[name] / norm
     return summary
+
+if __name__ == "__main__":
+    model = pickle.load(open("trained_models/ItW_multi_percep2_u10000/ItW_multi_percep2_u10000", "rb"))
+    print(get_terminus_input_size(model))
