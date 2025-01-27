@@ -32,8 +32,7 @@ In this repository, there are several feature extractors that are used to transl
 into useful input for classification models.  
 IF a feature extractor is based on a feature which is novel and specific to certain research or from
 an article, it is cited in the comments of the code (references below). Standard features that are
-typical in detection models and not specific to certain research or articles, or features that are
-built in to existing libraries (for example MFCCs) are not cited.
+built in to existing libraries (for example MFCCs) are attributed to their respective libraries.
   
 The features used in this repository can be, as in my previous research, classified into perceptible
 and imperceptible features. Perceptible features are features that are able to be perceived by
@@ -69,21 +68,22 @@ the readme files in their respective directories (in progress).
 
 ### Why separated sub-models?
 As can be seen in the diagram of the model, each input feature is first processed in its own
-sub-model before being concatenated and run through two final layers, landing at a singular output
-terminus. Because several of the features have a different input shape, it is not practical to
+sub-model before being concatenated and processed in what I call the terminus model, landing at a
+singular output. Because several of the features have a different input shape, it is not practical to
 concatenate the features together for use as an input for a combined model without producing a large
-amount of redundant data and potentially misrepresenting the features in their original form. code
-for pre- model concatenation is present in the repository under the "lines" training method in the
-classification file, but is presently not used. I have not deleted it in case it may become
-practical in the future.
+amount of redundant data and potentially misrepresenting the features in their original form. This
+kind of preprocessing would also result in convolution and pooling across features, because the
+model would not be aware of where one feature ends and the other begins. Code for feature
+concatenation in the preprocessing step is present in the repository under the "lines" training
+method in the classification module, but is presently not used.
 
 # Explanations
-As of now, the explanations are implemented using local interpretable model-agnostic explanations
-(LIME). The implementation functions by generating intermediate evaluation data, the outputs of
-each of the sub-models before the concatenate layer, from the initial training data to use as a 
-reference for the local explainer to create its linear approximation. For the creation of an
-explanation for the prediction on a new sample, the intermediate prediction data will be generated
-in the same fashion and used as the datapoint to explain.
+As of now, the explanations are implemented using the local interpretable model-agnostic explanations
+(LIME) method [[8]](#8). The implementation functions by generating intermediate evaluation data,
+the outputs of each of the sub-models before the concatenation layer, from the initial training
+data to use as a reference for the local explainer to create its linear approximation. For the
+creation of an explanation for the prediction on a new sample, the intermediate prediction data
+will be generated in the same fashion and used as the datapoint to explain.
 
 ### Why use intermediate data and not the original inputs?
 The intermediate data serves the purpose of offering a direct way to associate the input features
@@ -109,17 +109,17 @@ Because the extracted features do not result in standardized array shapes a slid
 over every array for standardization.  
 
 ### Networks
-Each feature is processed separately by its own network. These networks are stitched together into a
-kind of meta-network to produce the end-classification.
+Each feature is processed separately by its own network. These networks are stitched together and
+further processed in a "terminus" network.
 
 ### Training and Evaluation
 Training is performed on batches of previously extracted features merged together and labelled.  
-Evaluation is performed akin to training on batched of labelled features. Because of the nature of 
+Evaluation is performed akin to training on batches of labelled features. Because of the nature of 
 the sliding window over every file, there will be multiple evaluation results for every sample.
 These results are averaged and filtered by a threshold to produce a final result.
 
 ### Note
-I have tried my best to include pydoc where it is relevant.
+I have tried my best to include docstrings where they are relevant.
 
 # References
 <a id="1">[1]</a>
@@ -169,4 +169,8 @@ Junichi Yamagishi et al.
 the Automatic Speaker Verification and Spoofing Countermeasures Challenge. 2021 Edition of the
 Automatic Speaker Verification and Spoofing Countermeasures Challenge. ISCA, Sept. 16, 2021, pp.
 47–54. doi: 10 . 21437 / ASVSPOOF . 2021 - 8. url:
+<a id="8">[8]</a>
 https://www.isca-archive.org/asvspoof_2021/yamagishi21_asvspoof.html (visited on 07/04/2024).  
+Marco Tulio Ribeiro, Sameer Singh, and Carlos Guestrin. ”Why Should I Trust You?”: Explaining the
+Predictions of Any Classifier. Aug. 9, 2016. doi: 10.48550/arXiv.1602.04938. arXiv:
+1602.04938[cs]. url: http://arxiv.org/abs/1602.04938 (visited on 01/18/2025).
