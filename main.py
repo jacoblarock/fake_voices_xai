@@ -569,9 +569,9 @@ if __name__ == "__main__":
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
     # experiment metadata 
-    model_name = "ItW_multi_percep_wval_cterm_u10000"
+    model_name = "ItW_multi_percep_mpf_cterm_u10000"
     train_cutoff = 10000
 
-    # train(model_name, train_cutoff)
-    # evaluate(model_name, train_cutoff)
-    explainer_test("./trained_models/ItW_multi_percep2_u10000/ItW_multi_percep2_u10000")
+    train(model_name, train_cutoff)
+    evaluate(model_name, train_cutoff)
+    # explainer_test("./trained_models/ItW_multi_percep2_u10000/ItW_multi_percep2_u10000")
