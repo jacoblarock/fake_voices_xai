@@ -285,5 +285,5 @@ def explain(model: Model,
     return summary
 
 if __name__ == "__main__":
-    model = pickle.load(open("trained_models/ItW_multi_percep2_u10000/ItW_multi_percep2_u10000", "rb"))
+    model = pickle.load(open("trained_models/ItW_multi_percep_mpf_cterm_u10000/ItW_multi_percep_mpf_cterm_u10000", "rb"))
     print(get_terminus_input_size(model))

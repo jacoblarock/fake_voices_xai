@@ -572,6 +572,6 @@ if __name__ == "__main__":
     model_name = "ItW_multi_percep_mpf_cterm_u10000"
     train_cutoff = 10000
 
-    train(model_name, train_cutoff)
-    evaluate(model_name, train_cutoff)
-    # explainer_test("./trained_models/ItW_multi_percep2_u10000/ItW_multi_percep2_u10000")
+    # train(model_name, train_cutoff)
+    # evaluate(model_name, train_cutoff)
+    explainer_test("./trained_models/ItW_multi_percep_mpf_cterm_u10000/ItW_multi_percep_mpf_cterm_u10000")
