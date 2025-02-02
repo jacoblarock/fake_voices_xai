@@ -1,9 +1,5 @@
-from numpy import concatenate
-import tensorflow as tf
-from keras._tf_keras.keras import models, layers, losses, utils, Model
-from tensorflow import convert_to_tensor
+from keras._tf_keras.keras import models, layers, losses, utils, Model, KerasTensor
 from typing import Tuple
-import numpy as np
 import pickle
 
 def create_cnn_2d(input_shape: Tuple[int, int],
@@ -94,7 +90,7 @@ def create_cnn_1d(input_shape: int,
                   metrics=["accuracy"])
     return model
 
-def single_input(name: str | None = None):
+def single_input(name: str | None = None) -> models.Sequential:
     model = models.Sequential()
     if name != None:
         model.add(layers.Input((1, 1), name="input_" + name))
@@ -110,12 +106,45 @@ def single_input(name: str | None = None):
                   metrics=["accuracy"])
     return model
 
+def multi_input(in_count: int,
+                out_count: int,
+                name: str | None = None
+                ) -> models.Sequential:
+    """
+    Creates a model with multiple single-input layers that are concatted together into a specified
+    number of outputs
+    Arguments:
+    - in_count: number of input layers to create
+    - out_count: number of output layers to create
+    Keyword arguments:
+    - name: optional name for the input/output layers
+    """
+    model = models.Sequential()
+    if name != None:
+        model.add(layers.Input((in_count, 1), name="input_" + name))
+    else:
+        model.add(layers.Input((in_count, 1)))
+    model.add(layers.Flatten())
+    if name != None:
+        model.add(layers.Dense(out_count, name="out_" + name))
+    else:
+        model.add(layers.Dense(out_count))
+    model.compile(optimizer="adam",
+                  loss="mean_squared_error",
+                  metrics=["accuracy"])
+    return model
+
 def stitch_and_terminate(model_list: list[models.Sequential],
+                         n_layers: int = 0,
+                         convolution: bool = False
                          ) -> models.Model:
     """
     Stitch multiple models (created using the above functions) together to use multiple (non-concatted) features
     Arguments:
     - model_list: list of models to stitch together
+    Keyword arguments:
+    - n_layers: the number of hidden dense layers to add.
+    - convolution: when True, added hidden layers are convolutional.
     """
     outputs = []
     for m in model_list:
@@ -124,6 +153,15 @@ def stitch_and_terminate(model_list: list[models.Sequential],
     for m in model_list:
         inputs.append(m.inputs)
     stitch = layers.Concatenate()(outputs)
+    if convolution:
+        stitch = layers.Reshape(stitch.shape[1:] + (1,))(stitch)
+    output_size: int = stitch.shape[1]
+    for i in range(n_layers):
+        if not convolution:
+            stitch = layers.Dense(output_size // (2 * (i + 1)), name=f"h_dense_{i}")(stitch)
+        else:
+            stitch = layers.Conv1D(32, 3, activation="relu", name=f"h_conv_{i}")(stitch)
+            stitch = layers.MaxPooling1D(2)(stitch)
     stitch = layers.Flatten()(stitch)
     stitch = layers.Dense(1)(stitch)
     model = models.Model(inputs=inputs, outputs=stitch)
@@ -143,7 +181,15 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
         outputs = model.get_layer("out_" + name).output
         out[name] = Model(inputs=inputs, outputs=outputs)
     try:
-        inputs = model.get_layer("dense").input
+        # find inputs of the terminus
+        inputs = None
+        for layer in model.layers:
+            if "h_dense_0" == layer.name:
+                inputs = model.get_layer("h_dense_0").input
+            elif "reshape" == layer.name:
+                inputs = model.get_layer("h_conv_0").input
+        if not inputs:
+            inputs = model.get_layer("dense").input
         outputs = model.get_layer("dense").output
         out["terminus"] = Model(inputs=inputs, outputs=outputs)
     except Exception as e:
@@ -151,7 +197,7 @@ def decompose(model: models.Model) -> dict[str, models.Model]:
     return out
 
 if __name__ == "__main__":
-    model: Model = pickle.load(open("./trained_models/ItW_multi_percep_until10000", "rb"))
+    model: Model = pickle.load(open("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2", "rb"))
     print(model.summary())
     model_renames = {"input_mel": "input_mel_spec",
                      "input_mfcc": "input_mfccs",
@@ -165,10 +211,9 @@ if __name__ == "__main__":
                      "out_rap_shimmer": "out_rap_shim",
                      "out_ppq5_shimmer": "out_ppq5_shim",
                      "out_ppq55_shimmer": "out_ppq55_shim",
-                     "dense_15": "dense"
                      }
     for name in model_renames:
         model.get_layer(name).name = model_renames[name]
     print(model.summary())
     utils.plot_model(model, "./cache/model.png", show_layer_names=True)
-    pickle.dump(model, open("./trained_models/ItW_multi_percep_until10000", "wb"))
+    pickle.dump(model, open("./trained_models/ItW_multi_percep_u10000e2/ItW_multi_percep_u10000e2", "wb"))

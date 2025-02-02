@@ -198,32 +198,6 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
     print("shape", pitch_flucs.shape)
     print("max x:", max(pitch_flucs["x"]))
 
-    pitch_flucs_5 = mt_operations.file_func(feature_extraction.bulk_extract,
-                                   dataset_dir,
-                                   args=[dataset_dir,
-                                         dataset_ext,
-                                         feature_extraction.get_pitch_fluctuation,
-                                         [5]],
-                                   kwargs=extraction_kwargs,
-                                   cache_name="pitch_flucs_5"
-                                   )
-    print("pitch_flucs_5 extracted", datetime.now())
-    print("shape", pitch_flucs_5.shape)
-    print("max x:", max(pitch_flucs_5["x"]))
-
-    pitch_flucs_10 = mt_operations.file_func(feature_extraction.bulk_extract,
-                                   dataset_dir,
-                                   args=[dataset_dir,
-                                         dataset_ext,
-                                         feature_extraction.get_pitch_fluctuation,
-                                         [10]],
-                                   kwargs=extraction_kwargs,
-                                   cache_name="pitch_flucs_10"
-                                   )
-    print("pitch_flucs_10 extracted", datetime.now())
-    print("shape", pitch_flucs_10.shape)
-    print("max x:", max(pitch_flucs_10["x"]))
-
     local_jitter = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
                                    args=[dataset_dir,
@@ -335,8 +309,6 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              "onset_strength",
              "intensity",
              "pitch_flucs",
-             "pitch_flucs_5",
-             "pitch_flucs_10",
              "local_jitter",
              "rap_jitter",
              "ppq5_jitter",
@@ -352,8 +324,6 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              onset_strength,
              intensity,
              pitch_flucs,
-             pitch_flucs_5,
-             pitch_flucs_10,
              local_jitter,
              rap_jitter,
              ppq5_jitter,
@@ -363,7 +333,7 @@ def extract_separate(dataset_dir, dataset_ext, extraction_kwargs) -> Tuple[list[
              ppq5_shim,
              ppq55_shim])
 
-def eval(model: str | classification.networks.models.Sequential, eval_from: int):
+def evaluate(model: str | classification.networks.models.Sequential, eval_from: int):
 
     dataset_dir = "./datasets/release_in_the_wild/"
     dataset_ext = "wav"
@@ -385,7 +355,7 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
 
     # load model if a path is provided
     if type(model) == str:
-        model = pickle.load(open(model, "rb"))
+        model = pickle.load(open(f"models/{model}", "rb"))
     print(model.summary())
 
     # creates a list of dataframes for each extracted feature for sample-based batching
@@ -398,7 +368,7 @@ def eval(model: str | classification.networks.models.Sequential, eval_from: int)
     with open("cache/results_summary.txt", "w") as file:
         file.write(str(summary))
 
-def train(eval_until: int):
+def train(model_name, eval_until: int):
     feature_extraction.check_cache()
 
     dataset_dir = "./datasets/release_in_the_wild"
@@ -427,22 +397,20 @@ def train(eval_until: int):
 
     # create and train the model
     hnr_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="hnrs")
-    # mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel")
-    # mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfcc")
+    # mel_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mel_spec")
+    # mfcc_model = networks.create_cnn_2d((30, 30), 32, 3, pooling=True, output_size=30, name="mfccs")
     f0_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="f0_lens")
     onset_strength_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="onset_strength")
     intensity_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="intensity")
     pitch_fluc_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs")
-    pitch_fluc_5_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs_5")
-    pitch_fluc_10_model = networks.create_cnn_1d(30, 32, 3, pooling=False, output_size=30, name="pitch_flucs_10")
     local_jitter_model = networks.single_input(name="local_jitter")
     rap_jitter_model = networks.single_input(name="rap_jitter")
     ppq5_jitter_model = networks.single_input(name="ppq5_jitter")
     ppq55_jitter_model = networks.single_input(name="ppq55_jitter")
-    local_shim_model = networks.single_input(name="local_shimmer")
-    rap_shim_model = networks.single_input(name="rap_shimmer")
-    ppq5_shim_model = networks.single_input(name="ppq5_shimmer")
-    ppq55_shim_model = networks.single_input(name="ppq55_shimmer")
+    local_shim_model = networks.single_input(name="local_shim")
+    rap_shim_model = networks.single_input(name="rap_shim")
+    ppq5_shim_model = networks.single_input(name="ppq5_shim")
+    ppq55_shim_model = networks.single_input(name="ppq55_shim")
     model = networks.stitch_and_terminate([hnr_model,
                                            # mel_model,
                                            # mfcc_model,
@@ -450,8 +418,6 @@ def train(eval_until: int):
                                            onset_strength_model,
                                            intensity_model,
                                            pitch_fluc_model,
-                                           pitch_fluc_5_model,
-                                           pitch_fluc_10_model,
                                            local_jitter_model,
                                            rap_jitter_model,
                                            ppq5_jitter_model,
@@ -459,14 +425,14 @@ def train(eval_until: int):
                                            local_shim_model,
                                            rap_shim_model,
                                            ppq5_shim_model,
-                                           ppq55_shim_model])
+                                           ppq55_shim_model],
+                                          n_layers=3)
     print(model.summary())
     try:
-        utils.plot_model(model, "model_plot.png", show_layer_names=True)
+        utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")
     except:
         print("model plot not possible")
-    # histories = classification.train(matched_labels, feature_names, model, 3, batch_size=100000)
-    histories = classification.train(labels, feature_names, model, 1, batch_size=1000000, features=features, batch_method="samples", save_as="ItW_only_percep_wpc_u23833")
+    histories = classification.train(labels, feature_names, model, 1, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as=model_name)
     for history in histories:
         print(history)
 
@@ -545,16 +511,16 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    log = open("cache/exp_log.txt", "w")
-    e = explainers.make_explainer(labels, model, features, feature_cols, 1000000, 1000, cache_name="e1000")
-    for x in range(30000):
-        sample_features = explainers.isolate_sample(features, f"{x}.wav")
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000cterm")
+    for x in range(10000, 30000):
+        sample_features = classification.isolate_sample(features, f"{x}.wav")
         out = explainers.explain(model,
                                  e,
                                  sample_features,
                                  feature_cols,
-                                 1000000)
+                                 10000)
         print(out)
+        print("sum:", sum(out.values()))
         with open("cache/exp_log.txt", "a") as logfile:
             logfile.write(str(x) + ".wav\n")
             logfile.write(str(out) + "\n")
@@ -568,6 +534,10 @@ if __name__ == "__main__":
     """
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
-    train(23833)
-    eval("models/ItW_only_percep_wpc_u23833", 23833)
-    # explainer_test("./trained_models/ItW_multi_percep_until10000")
+    # experiment metadata 
+    model_name = "ItW_only_percep_cterm_u10000"
+    train_cutoff = 10000
+
+    train(model_name, train_cutoff)
+    evaluate(model_name, train_cutoff)
+    # explainer_test("./trained_models/ItW_multi_percep_wval_convpoolterm_u10000/ItW_multi_percep_wval_convpoolterm_u10000")
