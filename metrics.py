@@ -80,7 +80,7 @@ def tpr_fpr(data: list, threshold: float) -> tuple[float, float]:
     fpr = summary["fp"] / (summary["fp"] + summary["tn"])
     return tpr, fpr
 
-def gen_roc(data: list, save_path: str) -> None:
+def gen_roc(data: list, save_path: str) -> tuple[list[float], list[float]]:
     x = []
     y = []
     for i in range(-10, 110):
@@ -95,6 +95,14 @@ def gen_roc(data: list, save_path: str) -> None:
     plt.plot(x, y, linewidth=3)
     plt.fill_between(x, y, 0, color="b", alpha=0.2)
     plt.savefig(save_path)
+    return x, y
+
+def auc(roc_points: tuple[list[float], list[float]]) -> float:
+    x, y = roc_points
+    auc = 0
+    for i in range(1, len(x)):
+        auc += (x[i-1] - x[i]) * (y[i-1] + y[i]) / 2
+    return auc
 
 if __name__ == "__main__":
     import sys
@@ -114,4 +122,6 @@ if __name__ == "__main__":
         accuracy_res = accuracy(results, threshold)
         print("eer:", eer_res)
         print("accuracy:", accuracy_res)
-        gen_roc(results, result_dir + "roc.png")
+        roc = gen_roc(results, result_dir + "roc.png")
+        auc_res = auc(roc)
+        print("auc:", auc_res)
