@@ -330,7 +330,7 @@ def train(model_name, eval_until: int):
         utils.plot_model(model, "model_plot.png", show_layer_names=True, rankdir="LR")
     except:
         print("model plot not possible")
-    histories = classification.train(labels, feature_names, model, 2, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as=model_name)
+    histories = classification.train(labels, feature_names, model, 5, batch_size=2000, features=features, batch_method="samples", validation_split=0.2, save_as=model_name)
     for history in histories:
         print(history)
 
@@ -409,7 +409,7 @@ def explainer_test(model):
     #                                                            sample_features,
     #                                                            feature_cols,
     #                                                            1000000)
-    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000cterm")
+    e = explainers.make_explainer(labels, model, features, feature_cols, batch_size=100000, train_data_limit=10000, subset_size=1000, cache_name="e1000opt")
     for x in range(10000, 30000):
         sample_features = classification.isolate_sample(features, f"{x}.wav")
         out = explainers.explain(model,
@@ -433,9 +433,9 @@ if __name__ == "__main__":
     More specific parameters are in the extraction, train and eval functions, such as dataset directory.
     """
     # experiment metadata 
-    model_name = "ItW_multi_percep_opt_cterm_u10000"
+    model_name = "ItW_multi_percep_opt_cterm_u10000e5"
     train_cutoff = 10000
 
     train(model_name, train_cutoff)
     evaluate(model_name, train_cutoff)
-    # explainer_test("./trained_models/ItW_multi_percep_wval_convpoolterm_u10000/ItW_multi_percep_wval_convpoolterm_u10000")
+    # explainer_test("./trained_models/ItW_multi_percep_opt_cterm_u10000/ItW_multi_percep_opt_cterm_u10000")
