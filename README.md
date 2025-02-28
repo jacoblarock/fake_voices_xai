@@ -63,7 +63,7 @@ be used for evaluation or surrogate purposes. The file names are a summary of th
 and the training. Summaries of the models as well as a graphic of their architectures are given
 the readme files in their respective directories (in progress).  
 
-### Example: Architecture of the featured model in the repository
+### Example: Architecture of the featured model in this branch
 ![architecture of the featured model, others in the trained_models directory](model_plot.png)
 
 ### Why separated sub-models?
