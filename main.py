@@ -25,6 +25,9 @@ def plot_2d(data_arr):
     return
 
 def extract_progressive_merging(labels, dataset_dir, dataset_ext, extraction_kwargs):
+    """
+    THIS FUNCTION IS DEPRECATED AND DOES NOT FIND USE IN THE CURRENT EXPERIMENTS
+    """
     # generate hnrs
     hnrs = mt_operations.file_func(feature_extraction.bulk_extract,
                                    dataset_dir,
@@ -437,6 +440,9 @@ def train(model_name, eval_until: int):
         print(history)
 
 def classify_test(model: str | classification.networks.models.Sequential, filename: str):
+    """
+    THIS FUNCTION IS DEPRECATED AND DOES NOT FIND USE IN THE CURRENT EXPERIMENTS
+    """
 
     dataset_dir = "./datasets/release_in_the_wild"
     dataset_ext = "wav"
