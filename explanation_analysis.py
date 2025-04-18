@@ -18,6 +18,14 @@ def load_explanations(path: str) -> dict[str,dict[str,float]]:
     return out
 
 def importance(explanations: dict[str,dict[str,float]]) -> dict[str,float]:
+    """
+    The importance is the average of the absolute values of the weights of each feature over a set
+    of samples.
+    Arguments:
+    - explanations: dict of explanations as produced by the load_explanations function.
+    Returns:
+    - Dict of the metric results for each feature
+    """
     features = explanations[list(explanations.keys())[0]].keys()
     out = {}
     # add features to out map
@@ -31,9 +39,17 @@ def importance(explanations: dict[str,dict[str,float]]) -> dict[str,float]:
         out[feature] = np.average(out[feature])
     return out
 
-def relevance(explanations: dict[str,dict[str,float]],
+def trust(explanations: dict[str,dict[str,float]],
               labels: pd.DataFrame
               ) -> dict[str,float]:
+    """
+    The trust is the average of the weights of each feature over a set of samples, adjusted for
+    the correctness of the weight.
+    Arguments:
+    - explanations: dict of explanations as produced by the load_explanations function.
+    Returns:
+    - Dict of the metric results for each feature
+    """
     features = explanations[list(explanations.keys())[0]].keys()
     out = {}
     # add features to out map
